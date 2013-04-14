@@ -1,5 +1,6 @@
 // Implemented by Douwe Maan
-// Design by Jnm (See http://forums.getpebble.com/discussion/comment/3538/#Comment_3538)
+// Envisioned as a watchface by Jean-Noël Mattern (Jnm) (See http://forums.getpebble.com/discussion/comment/3538/#Comment_3538)
+// Based on the display of the Freebox Revolution (http://www.free.fr/adsl/freebox-revolution.html), which was designed by Philippe Starck.
 
 #include "pebble_os.h"
 #include "pebble_app.h"
