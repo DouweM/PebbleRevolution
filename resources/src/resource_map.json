@@ -1,0 +1,201 @@
+{
+  "friendlyVersion":  "1.0",
+  "versionDefName":   "APP_RESOURCES",
+
+  "media": [
+    {
+      "type":     "png",
+      "defName":  "IMAGE_MENU_ICON",
+      "file":     "images/menu_icon.png"
+    },
+
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_0",
+      "file":     "images/time_0.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_1",
+      "file":     "images/time_1.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_2",
+      "file":     "images/time_2.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_3",
+      "file":     "images/time_3.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_4",
+      "file":     "images/time_4.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_5",
+      "file":     "images/time_5.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_6",
+      "file":     "images/time_6.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_7",
+      "file":     "images/time_7.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_8",
+      "file":     "images/time_8.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_TIME_9",
+      "file":     "images/time_9.png"
+    },
+
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_0",
+      "file":     "images/date_0.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_1",
+      "file":     "images/date_1.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_2",
+      "file":     "images/date_2.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_3",
+      "file":     "images/date_3.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_4",
+      "file":     "images/date_4.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_5",
+      "file":     "images/date_5.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_6",
+      "file":     "images/date_6.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_7",
+      "file":     "images/date_7.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_8",
+      "file":     "images/date_8.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DATE_9",
+      "file":     "images/date_9.png"
+    },
+
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_0",
+      "file":     "images/year_0.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_1",
+      "file":     "images/year_1.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_2",
+      "file":     "images/year_2.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_3",
+      "file":     "images/year_3.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_4",
+      "file":     "images/year_4.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_5",
+      "file":     "images/year_5.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_6",
+      "file":     "images/year_6.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_7",
+      "file":     "images/year_7.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_8",
+      "file":     "images/year_8.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_YEAR_9",
+      "file":     "images/year_9.png"
+    },
+
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_0",
+      "file":     "images/day_0.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_1",
+      "file":     "images/day_1.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_2",
+      "file":     "images/day_2.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_3",
+      "file":     "images/day_3.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_4",
+      "file":     "images/day_4.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_5",
+      "file":     "images/day_5.png"
+    },
+    {
+      "type":     "png",
+      "defName":  "IMAGE_DAY_6",
+      "file":     "images/day_6.png"
+    }
+  ]
+}
