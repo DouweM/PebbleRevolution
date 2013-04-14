@@ -6,4 +6,6 @@ Designed by Jnm, who posted it in the ["Watch-face ideas" thread](http://forums.
 
 Based on the display of the [Freebox Revolution](http://www.free.fr/adsl/freebox-revolution.html).
 
+[Download here](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-1.0.pbw)
+
 ![Photo](http://d.pr/i/LBSq+)
