@@ -10,7 +10,7 @@
 #define MY_UUID { 0xA1, 0x23, 0x08, 0x61, 0xD4, 0xEB, 0x4F, 0x6E, 0xA2, 0xD0, 0xEA, 0xA2, 0xA0, 0x77, 0x97, 0xDD }
 PBL_APP_INFO(MY_UUID,
              "Revolution", "Douwe Maan",
-             1, 0, /* App version */
+             1, 1, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
@@ -318,7 +318,7 @@ void display_date_value(int value, int part_number) {
 
 void display_date(PblTm *tick_time) {
   display_date_value(tick_time->tm_mday, 0);
-  display_date_value(tick_time->tm_mon, 1);
+  display_date_value(tick_time->tm_mon + 1, 1);
 }
 
 // Year
