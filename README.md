@@ -2,7 +2,7 @@
 
 ![Photo](http://d.pr/i/Qe9k+)
 
-[Video of time animation](http://d.pr/v/HT0t)
+[Video of time animation](http://d.pr/v/nQWY)
 
 Implemented by Douwe Maan.
 
