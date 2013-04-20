@@ -15,9 +15,11 @@ PBL_APP_INFO(MY_UUID,
              APP_INFO_WATCH_FACE);
 
 
-#define USE_AMERICAN_DATE false
+// Settings
+#define USE_AMERICAN_DATE_FORMAT      false
+#define TIME_SLOT_ANIMATION_DURATION  500
 
-#define TIME_SLOT_ANIMATION_DURATION 500
+// Magic numbers
 
 #define SCREEN_WIDTH      144
 #define SCREEN_HEIGHT     168
@@ -39,6 +41,7 @@ PBL_APP_INFO(MY_UUID,
 #define DATE_PART_SPACE   4
 
 
+// Images
 #define NUMBER_OF_TIME_IMAGES 10
 const int TIME_IMAGE_RESOURCE_IDS[NUMBER_OF_TIME_IMAGES] = {
   RESOURCE_ID_IMAGE_TIME_0, 
@@ -71,8 +74,8 @@ const int DAY_IMAGE_RESOURCE_IDS[NUMBER_OF_DAY_IMAGES] = {
 };
 
 
+// Main
 Window window;
-
 Layer date_container_layer;
 Layer day_layer;
 Layer date_layer;
@@ -81,15 +84,18 @@ Layer year_layer;
 
 #define EMPTY_SLOT -1
 
+// Time
 #define NUMBER_OF_TIME_SLOTS 4
 BmpContainer time_image_containers[NUMBER_OF_TIME_SLOTS];
 Layer time_slot_layers[NUMBER_OF_TIME_SLOTS];
-int time_slot_state[NUMBER_OF_TIME_SLOTS]     = {EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT};
-int new_time_slot_state[NUMBER_OF_TIME_SLOTS] = {EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT};
+int time_slot_state[NUMBER_OF_TIME_SLOTS]       = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
+int new_time_slot_state[NUMBER_OF_TIME_SLOTS]   = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
+bool time_slot_animating[NUMBER_OF_TIME_SLOTS]  = { false, false, false, false };
 
+// Date
 #define NUMBER_OF_DATE_SLOTS 4
 BmpContainer date_image_containers[NUMBER_OF_DATE_SLOTS];
-int date_slot_state[NUMBER_OF_DATE_SLOTS] = {EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT};
+int date_slot_state[NUMBER_OF_DATE_SLOTS] = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
 
 #define NUMBER_OF_YEAR_SLOTS 2
 BmpContainer year_image_containers[NUMBER_OF_YEAR_SLOTS];
@@ -99,27 +105,32 @@ BmpContainer day_image_container;
 bool day_image_loaded;
 
 
+// Display
 void display_time(PblTm *tick_time);
 void display_date(PblTm *tick_time);
 void display_year(PblTm *tick_time);
 void display_day(PblTm *tick_time);
 void draw_date_container(Layer *layer, GContext *ctx);
 
+// Time
 void display_time_value(int value, int row_number);
 void update_time_slot(int time_slot_number, int digit_value);
 void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, int time_slot_number, int digit_value);
 void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, int time_slot_number);
+void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context);
 void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
 void load_digit_image_into_time_slot(int time_slot_number, int digit_value);
 void unload_digit_image_from_time_slot(int time_slot_number);
 GRect frame_for_time_slot(int time_slot_number);
 
+// Date
 void display_date_value(int value, int part_number);
 void update_date_slot(int date_slot_number, int digit_value);
 void load_digit_image_into_date_slot(int date_slot_number, int digit_value);
 void unload_digit_image_from_date_slot(int date_slot_number);
 GRect frame_for_date_slot(int date_slot_number);
 
+// Handlers
 void pbl_main(void *params);
 void handle_init(AppContextRef ctx);
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event);
@@ -137,7 +148,7 @@ void display_time(PblTm *tick_time) {
     }
   }
 
-  display_time_value(hour, 0);
+  display_time_value(hour,              0);
   display_time_value(tick_time->tm_min, 1);
 }
 
@@ -145,11 +156,11 @@ void display_date(PblTm *tick_time) {
   int day   = tick_time->tm_mday;
   int month = tick_time->tm_mon + 1;
 
-#if USE_AMERICAN_DATE
+#if USE_AMERICAN_DATE_FORMAT
   display_date_value(month, 0);
-  display_date_value(day, 1);
+  display_date_value(day,   1);
 #else
-  display_date_value(day, 0);
+  display_date_value(day,   0);
   display_date_value(month, 1);
 #endif
 }
@@ -197,6 +208,7 @@ void display_day(PblTm *tick_time) {
 
   bmp_init_container(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday], &day_image_container);
   layer_add_child(&day_layer, &day_image_container.layer.layer);
+
   day_image_loaded = true;
 }
 
@@ -209,9 +221,6 @@ void draw_date_container(Layer *layer, GContext *ctx) {
 void display_time_value(int value, int row_number) {
   value = value % 100; // Maximum of two digits per row.
 
-  // Column order is: | Column 0 | Column 1 |
-  // (We process the columns in reverse order because that makes
-  // extracting the digits from the value easier.)
   for (int column_number = 1; column_number >= 0; column_number--) {
     int time_slot_number = (row_number * 2) + column_number;
 
@@ -229,6 +238,13 @@ void update_time_slot(int time_slot_number, int digit_value) {
   if (time_slot_state[time_slot_number] == digit_value) {
     return;
   }
+
+  if (time_slot_animating[time_slot_number]) {
+    // Otherwise we'll crash when the animation is replaced by a new animation before we're finished.
+    return;
+  }
+
+  time_slot_animating[time_slot_number] = true;
 
   static PropertyAnimation animations[NUMBER_OF_TIME_SLOTS];
   PropertyAnimation *animation = &animations[time_slot_number];
@@ -278,8 +294,11 @@ void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, int time_
   load_digit_image_into_time_slot(time_slot_number, digit_value);
 
   property_animation_init_layer_frame(animation, time_slot_layer, NULL, &to_frame);
-  animation_set_duration(&animation->animation, TIME_SLOT_ANIMATION_DURATION);
-  animation_set_curve(&animation->animation, AnimationCurveLinear);
+  animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
+  animation_set_curve(    &animation->animation, AnimationCurveLinear);
+  animation_set_handlers( &animation->animation, (AnimationHandlers){
+    .stopped = (AnimationStoppedHandler)slide_in_animation_stopped
+  }, (void *)(intptr_t)time_slot_number);
 }
 
 void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, int time_slot_number) {
@@ -304,10 +323,16 @@ void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, int time
   GRect to_frame = GRect(to_x, to_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
 
   property_animation_init_layer_frame(animation, &time_slot_layers[time_slot_number], NULL, &to_frame);
-  animation_set_duration(&animation->animation, TIME_SLOT_ANIMATION_DURATION);
-  animation_set_curve(&animation->animation, AnimationCurveLinear);
+  animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
+  animation_set_curve(    &animation->animation, AnimationCurveLinear);
 
   // Make sure to unload the image when the animation has finished!
+}
+
+void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context) {
+  int time_slot_number = (intptr_t)context;
+
+  time_slot_animating[time_slot_number] = false;
 }
 
 void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context) {
@@ -363,9 +388,6 @@ GRect frame_for_time_slot(int time_slot_number) {
 void display_date_value(int value, int part_number) {
   value = value % 100; // Maximum of two digits per row.
 
-  // Column order is: | Column 0 | Column 1 |
-  // (We process the columns in reverse order because that makes
-  // extracting the digits from the value easier.)
   for (int column_number = 1; column_number >= 0; column_number--) {
     int date_slot_number = (part_number * 2) + column_number;
 
@@ -450,6 +472,7 @@ void handle_init(AppContextRef ctx) {
 
   resource_init_current_app(&APP_RESOURCES);
 
+
   // Root layer
   Layer *root_layer = window_get_root_layer(&window);
 
@@ -497,13 +520,14 @@ void handle_init(AppContextRef ctx) {
   layer_add_child(&date_container_layer, &year_layer);
 
 
+  // Display
   PblTm tick_time;
   get_time(&tick_time);
 
+  display_time(&tick_time);
   display_day(&tick_time);
   display_date(&tick_time);
   display_year(&tick_time);
-  // display_time(&tick_time);
 }
 
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event) {
@@ -530,5 +554,7 @@ void handle_deinit(AppContextRef ctx) {
     bmp_deinit_container(&year_image_containers[i]);
   }
 
-  bmp_deinit_container(&day_image_container);
+  if (day_image_loaded) {
+    bmp_deinit_container(&day_image_container);
+  }
 }
