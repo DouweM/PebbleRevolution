@@ -10,7 +10,7 @@
 #define MY_UUID { 0xA1, 0x23, 0x08, 0x61, 0xD4, 0xEB, 0x4F, 0x6E, 0xA2, 0xD0, 0xEA, 0xA2, 0xA0, 0x77, 0x97, 0xDD }
 PBL_APP_INFO(MY_UUID,
              "Revolution", "Douwe Maan",
-             1, 2, /* App version */
+             1, 3, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 

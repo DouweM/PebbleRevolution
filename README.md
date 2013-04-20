@@ -10,6 +10,6 @@ Envisioned as a watchface by Jean-Noël Mattern (Jnm), who posted it in the ["Wa
 
 Based on the display of the [Freebox Revolution](http://www.free.fr/adsl/freebox-revolution.html), which was designed by Philippe Starck.
 
-### Download version 1.2
-* [Revolution-1.2.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-1.2.pbw)
-* [Revolution-American-1.2.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American-1.2.pbw) (date formatted as MM-DD)
+### Download version 1.3
+* [Revolution-1.3.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-1.3.pbw)
+* [Revolution-American-1.3.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American-1.3.pbw) (date formatted as MM-DD)
