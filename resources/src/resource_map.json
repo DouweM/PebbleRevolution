@@ -113,53 +113,53 @@
 
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_0",
-      "file":     "images/year_0.png"
+      "defName":  "IMAGE_SECOND_0",
+      "file":     "images/second_0.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_1",
-      "file":     "images/year_1.png"
+      "defName":  "IMAGE_SECOND_1",
+      "file":     "images/second_1.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_2",
-      "file":     "images/year_2.png"
+      "defName":  "IMAGE_SECOND_2",
+      "file":     "images/second_2.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_3",
-      "file":     "images/year_3.png"
+      "defName":  "IMAGE_SECOND_3",
+      "file":     "images/second_3.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_4",
-      "file":     "images/year_4.png"
+      "defName":  "IMAGE_SECOND_4",
+      "file":     "images/second_4.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_5",
-      "file":     "images/year_5.png"
+      "defName":  "IMAGE_SECOND_5",
+      "file":     "images/second_5.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_6",
-      "file":     "images/year_6.png"
+      "defName":  "IMAGE_SECOND_6",
+      "file":     "images/second_6.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_7",
-      "file":     "images/year_7.png"
+      "defName":  "IMAGE_SECOND_7",
+      "file":     "images/second_7.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_8",
-      "file":     "images/year_8.png"
+      "defName":  "IMAGE_SECOND_8",
+      "file":     "images/second_8.png"
     },
     {
       "type":     "png",
-      "defName":  "IMAGE_YEAR_9",
-      "file":     "images/year_9.png"
+      "defName":  "IMAGE_SECOND_9",
+      "file":     "images/second_9.png"
     },
 
     {

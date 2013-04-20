@@ -20,25 +20,24 @@ PBL_APP_INFO(MY_UUID,
 #define TIME_SLOT_ANIMATION_DURATION  500
 
 // Magic numbers
+#define SCREEN_WIDTH        144
+#define SCREEN_HEIGHT       168
 
-#define SCREEN_WIDTH      144
-#define SCREEN_HEIGHT     168
+#define TIME_IMAGE_WIDTH    70
+#define TIME_IMAGE_HEIGHT   70
 
-#define TIME_IMAGE_WIDTH  70
-#define TIME_IMAGE_HEIGHT 70
+#define DATE_IMAGE_WIDTH    20
+#define DATE_IMAGE_HEIGHT   20
 
-#define DATE_IMAGE_WIDTH  20
-#define DATE_IMAGE_HEIGHT 20
+#define SECOND_IMAGE_WIDTH  10
+#define SECOND_IMAGE_HEIGHT 10
 
-#define YEAR_IMAGE_WIDTH  10
-#define YEAR_IMAGE_HEIGHT 10
+#define DAY_IMAGE_WIDTH     20
+#define DAY_IMAGE_HEIGHT    10
 
-#define DAY_IMAGE_WIDTH   20
-#define DAY_IMAGE_HEIGHT  10
-
-#define MARGIN            1
-#define TIME_SLOT_SPACE   2
-#define DATE_PART_SPACE   4
+#define MARGIN              1
+#define TIME_SLOT_SPACE     2
+#define DATE_PART_SPACE     4
 
 
 // Images
@@ -58,12 +57,12 @@ const int DATE_IMAGE_RESOURCE_IDS[NUMBER_OF_DATE_IMAGES] = {
   RESOURCE_ID_IMAGE_DATE_7, RESOURCE_ID_IMAGE_DATE_8, RESOURCE_ID_IMAGE_DATE_9
 };
 
-#define NUMBER_OF_YEAR_IMAGES 10
-const int YEAR_IMAGE_RESOURCE_IDS[NUMBER_OF_YEAR_IMAGES] = {
-  RESOURCE_ID_IMAGE_YEAR_0, 
-  RESOURCE_ID_IMAGE_YEAR_1, RESOURCE_ID_IMAGE_YEAR_2, RESOURCE_ID_IMAGE_YEAR_3, 
-  RESOURCE_ID_IMAGE_YEAR_4, RESOURCE_ID_IMAGE_YEAR_5, RESOURCE_ID_IMAGE_YEAR_6, 
-  RESOURCE_ID_IMAGE_YEAR_7, RESOURCE_ID_IMAGE_YEAR_8, RESOURCE_ID_IMAGE_YEAR_9
+#define NUMBER_OF_SECOND_IMAGES 10
+const int SECOND_IMAGE_RESOURCE_IDS[NUMBER_OF_SECOND_IMAGES] = {
+  RESOURCE_ID_IMAGE_SECOND_0, 
+  RESOURCE_ID_IMAGE_SECOND_1, RESOURCE_ID_IMAGE_SECOND_2, RESOURCE_ID_IMAGE_SECOND_3, 
+  RESOURCE_ID_IMAGE_SECOND_4, RESOURCE_ID_IMAGE_SECOND_5, RESOURCE_ID_IMAGE_SECOND_6, 
+  RESOURCE_ID_IMAGE_SECOND_7, RESOURCE_ID_IMAGE_SECOND_8, RESOURCE_ID_IMAGE_SECOND_9
 };
 
 #define NUMBER_OF_DAY_IMAGES  7
@@ -77,10 +76,6 @@ const int DAY_IMAGE_RESOURCE_IDS[NUMBER_OF_DAY_IMAGES] = {
 // Main
 Window window;
 Layer date_container_layer;
-Layer day_layer;
-Layer date_layer;
-Layer year_layer;
-
 
 #define EMPTY_SLOT -1
 
@@ -94,13 +89,18 @@ bool time_slot_animating[NUMBER_OF_TIME_SLOTS]  = { false, false, false, false }
 
 // Date
 #define NUMBER_OF_DATE_SLOTS 4
+Layer date_layer;
 BmpContainer date_image_containers[NUMBER_OF_DATE_SLOTS];
 int date_slot_state[NUMBER_OF_DATE_SLOTS] = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
 
-#define NUMBER_OF_YEAR_SLOTS 2
-BmpContainer year_image_containers[NUMBER_OF_YEAR_SLOTS];
-bool year_images_loaded;
+// Seconds
+#define NUMBER_OF_SECOND_SLOTS 2
+Layer seconds_layer;
+BmpContainer second_image_containers[NUMBER_OF_SECOND_SLOTS];
+int second_slot_state[NUMBER_OF_SECOND_SLOTS] = { EMPTY_SLOT, EMPTY_SLOT };
 
+// Day
+Layer day_layer;
 BmpContainer day_image_container;
 bool day_image_loaded;
 
@@ -108,7 +108,7 @@ bool day_image_loaded;
 // Display
 void display_time(PblTm *tick_time);
 void display_date(PblTm *tick_time);
-void display_year(PblTm *tick_time);
+void display_seconds(PblTm *tick_time);
 void display_day(PblTm *tick_time);
 void draw_date_container(Layer *layer, GContext *ctx);
 
@@ -130,10 +130,16 @@ void load_digit_image_into_date_slot(int date_slot_number, int digit_value);
 void unload_digit_image_from_date_slot(int date_slot_number);
 GRect frame_for_date_slot(int date_slot_number);
 
+// Seconds
+void update_second_slot(int second_slot_number, int digit_value);
+void load_digit_image_into_second_slot(int second_slot_number, int digit_value);
+void unload_digit_image_from_second_slot(int second_slot_number);
+GRect frame_for_second_slot(int second_slot_number);
+
 // Handlers
 void pbl_main(void *params);
 void handle_init(AppContextRef ctx);
-void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event);
+void handle_second_tick(AppContextRef ctx, PebbleTickEvent *event);
 void handle_deinit(AppContextRef ctx);
 
 
@@ -165,39 +171,16 @@ void display_date(PblTm *tick_time) {
 #endif
 }
 
-void display_year(PblTm *tick_time) {
-  if (year_images_loaded) {
-    for (int i = 0; i < NUMBER_OF_YEAR_SLOTS; i++) {
-      layer_remove_from_parent(&year_image_containers[i].layer.layer);
-      bmp_deinit_container(&year_image_containers[i]);
-    }
-  }
+void display_seconds(PblTm *tick_time) {
+  int seconds = tick_time->tm_sec;
 
-  int year = tick_time->tm_year;
+  seconds = seconds % 100; // Maximum of two digits per row.
 
-  year = year % 100; // Maximum of two digits per row.
-
-  // Column order is: | Column 0 | Column 1 |
-  // (We process the columns in reverse order because that makes
-  // extracting the digits from the year easier.)
-  for (int column_number = 1; column_number >= 0; column_number--) {
-    BmpContainer *image_container = &year_image_containers[column_number];
-
-    GRect frame = GRect(
-      column_number * (YEAR_IMAGE_WIDTH + MARGIN), 
-      0, 
-      YEAR_IMAGE_WIDTH, 
-      YEAR_IMAGE_HEIGHT
-    );
-
-    bmp_init_container(YEAR_IMAGE_RESOURCE_IDS[year % 10], image_container);
-    layer_set_frame(&image_container->layer.layer, frame);
-    layer_add_child(&year_layer, &image_container->layer.layer);
+  for (int second_slot_number = 1; second_slot_number >= 0; second_slot_number--) {
+    update_second_slot(second_slot_number, seconds % 10);
     
-    year = year / 10;
+    seconds = seconds / 10;
   }
-
-  year_images_loaded = true;
 }
 
 void display_day(PblTm *tick_time) {
@@ -450,6 +433,60 @@ GRect frame_for_date_slot(int date_slot_number) {
   return GRect(x, 0, DATE_IMAGE_WIDTH, DATE_IMAGE_HEIGHT);
 }
 
+// Seconds
+void update_second_slot(int second_slot_number, int digit_value) {
+  if (second_slot_number < 0 || second_slot_number >= NUMBER_OF_SECOND_SLOTS) {
+    return;
+  }
+
+  if (second_slot_state[second_slot_number] == digit_value) {
+    return;
+  }
+
+  unload_digit_image_from_second_slot(second_slot_number);
+  load_digit_image_into_second_slot(second_slot_number, digit_value);
+}
+
+void load_digit_image_into_second_slot(int second_slot_number, int digit_value) {
+  if (digit_value < 0 || digit_value > 9) {
+    return;
+  }
+
+  if (second_slot_state[second_slot_number] != EMPTY_SLOT) {
+    return;
+  }
+
+  second_slot_state[second_slot_number] = digit_value;
+
+  BmpContainer *image_container = &second_image_containers[second_slot_number];
+
+  bmp_init_container(SECOND_IMAGE_RESOURCE_IDS[digit_value], image_container);
+  layer_set_frame(&image_container->layer.layer, frame_for_second_slot(second_slot_number));
+  layer_add_child(&seconds_layer, &image_container->layer.layer);
+}
+
+void unload_digit_image_from_second_slot(int second_slot_number) {
+  if (second_slot_state[second_slot_number] == EMPTY_SLOT) {
+    return;
+  }
+
+  BmpContainer *image_container = &second_image_containers[second_slot_number];
+
+  layer_remove_from_parent(&image_container->layer.layer);
+  bmp_deinit_container(image_container);
+
+  second_slot_state[second_slot_number] = EMPTY_SLOT;
+}
+
+GRect frame_for_second_slot(int second_slot_number) {
+  return GRect(
+    second_slot_number * (SECOND_IMAGE_WIDTH + MARGIN), 
+    0, 
+    SECOND_IMAGE_WIDTH, 
+    SECOND_IMAGE_HEIGHT
+  );
+}
+
 // Handlers
 void pbl_main(void *params) {
   PebbleAppHandlers handlers = {
@@ -457,8 +494,8 @@ void pbl_main(void *params) {
     .deinit_handler = &handle_deinit,
 
     .tick_info = {
-      .tick_handler = &handle_minute_tick,
-      .tick_units   = MINUTE_UNIT
+      .tick_handler = &handle_second_tick,
+      .tick_units   = SECOND_UNIT
     }
   };
 
@@ -509,15 +546,15 @@ void handle_init(AppContextRef ctx) {
   layer_init(&date_layer, date_layer_frame);
   layer_add_child(&date_container_layer, &date_layer);
 
-  // Year
-  GRect year_layer_frame = GRect(
-    SCREEN_WIDTH - YEAR_IMAGE_WIDTH - MARGIN - YEAR_IMAGE_WIDTH - MARGIN, 
-    date_container_height - YEAR_IMAGE_HEIGHT - MARGIN, 
-    YEAR_IMAGE_WIDTH + MARGIN + YEAR_IMAGE_WIDTH, 
-    YEAR_IMAGE_HEIGHT
+  // Seconds
+  GRect seconds_layer_frame = GRect(
+    SCREEN_WIDTH - SECOND_IMAGE_WIDTH - MARGIN - SECOND_IMAGE_WIDTH - MARGIN, 
+    date_container_height - SECOND_IMAGE_HEIGHT - MARGIN, 
+    SECOND_IMAGE_WIDTH + MARGIN + SECOND_IMAGE_WIDTH, 
+    SECOND_IMAGE_HEIGHT
   );
-  layer_init(&year_layer, year_layer_frame);
-  layer_add_child(&date_container_layer, &year_layer);
+  layer_init(&seconds_layer, seconds_layer_frame);
+  layer_add_child(&date_container_layer, &seconds_layer);
 
 
   // Display
@@ -527,20 +564,20 @@ void handle_init(AppContextRef ctx) {
   display_time(&tick_time);
   display_day(&tick_time);
   display_date(&tick_time);
-  display_year(&tick_time);
+  display_seconds(&tick_time);
 }
 
-void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event) {
+void handle_second_tick(AppContextRef ctx, PebbleTickEvent *event) {
+  display_seconds(event->tick_time);
+
+  if ((event->units_changed & MINUTE_UNIT) == MINUTE_UNIT) {
+    display_time(event->tick_time);
+  }
+
   if ((event->units_changed & DAY_UNIT) == DAY_UNIT) {
     display_day(event->tick_time);
     display_date(event->tick_time);
   }
-
-  if ((event->units_changed & YEAR_UNIT) == YEAR_UNIT) {
-    display_year(event->tick_time);
-  }
-
-  display_time(event->tick_time);
 }
 
 void handle_deinit(AppContextRef ctx) {
@@ -550,8 +587,8 @@ void handle_deinit(AppContextRef ctx) {
   for (int i = 0; i < NUMBER_OF_DATE_SLOTS; i++) {
     unload_digit_image_from_date_slot(i);
   }
-  for (int i = 0; i < NUMBER_OF_YEAR_SLOTS; i++) {
-    bmp_deinit_container(&year_image_containers[i]);
+  for (int i = 0; i < NUMBER_OF_SECOND_SLOTS; i++) {
+    unload_digit_image_from_second_slot(i);
   }
 
   if (day_image_loaded) {
