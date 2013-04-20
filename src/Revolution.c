@@ -103,7 +103,8 @@ void display_time(PblTm *tick_time);
 void display_date(PblTm *tick_time);
 void display_year(PblTm *tick_time);
 void display_day(PblTm *tick_time);
-void draw_date_container(Layer *layer, GContext* ctx);
+void draw_date_container(Layer *layer, GContext *ctx);
+
 void display_time_value(int value, int row_number);
 void update_time_slot(int time_slot_number, int digit_value);
 void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, int time_slot_number, int digit_value);
@@ -112,11 +113,13 @@ void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, 
 void load_digit_image_into_time_slot(int time_slot_number, int digit_value);
 void unload_digit_image_from_time_slot(int time_slot_number);
 GRect frame_for_time_slot(int time_slot_number);
+
 void display_date_value(int value, int part_number);
 void update_date_slot(int date_slot_number, int digit_value);
 void load_digit_image_into_date_slot(int date_slot_number, int digit_value);
 void unload_digit_image_from_date_slot(int date_slot_number);
 GRect frame_for_date_slot(int date_slot_number);
+
 void pbl_main(void *params);
 void handle_init(AppContextRef ctx);
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event);
@@ -154,6 +157,7 @@ void display_date(PblTm *tick_time) {
 void display_year(PblTm *tick_time) {
   if (year_images_loaded) {
     for (int i = 0; i < NUMBER_OF_YEAR_SLOTS; i++) {
+      layer_remove_from_parent(&year_image_containers[i].layer.layer);
       bmp_deinit_container(&year_image_containers[i]);
     }
   }
@@ -196,7 +200,7 @@ void display_day(PblTm *tick_time) {
   day_image_loaded = true;
 }
 
-void draw_date_container(Layer *layer, GContext* ctx) {
+void draw_date_container(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_rect(ctx, GRect(0, 0, layer->bounds.size.w, layer->bounds.size.h), 0, GCornerNone);
 }
