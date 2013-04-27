@@ -81,14 +81,18 @@ Layer date_container_layer;
 
 #define EMPTY_SLOT -1
 
+typedef struct Slot {
+  int           number;
+  BmpContainer  image_container;
+  int           state;
+} Slot;
+
 // Time
 typedef struct TimeSlot {
-  int               number;
-  BmpContainer      image_container;
-  Layer             layer;
-  int               state;
+  Slot              slot;
   int               new_state;
-  PropertyAnimation animation;
+  PropertyAnimation slide_out_animation;
+  PropertyAnimation slide_in_animation;
   bool              animating;
 } TimeSlot;
 
@@ -97,35 +101,27 @@ Layer time_layer;
 TimeSlot time_slots[NUMBER_OF_TIME_SLOTS];
 
 // Date
-typedef struct DateSlot {
-  int           number;
-  BmpContainer  image_container;
-  int           state;
-} DateSlot;
-
 #define NUMBER_OF_DATE_SLOTS 4
 Layer date_layer;
-DateSlot date_slots[NUMBER_OF_DATE_SLOTS];
+Slot date_slots[NUMBER_OF_DATE_SLOTS];
 
 // Seconds
-typedef struct SecondSlot {
-  int           number;
-  BmpContainer  image_container;
-  int           state;
-} SecondSlot;
-
 #define NUMBER_OF_SECOND_SLOTS 2
 Layer seconds_layer;
-SecondSlot second_slots[NUMBER_OF_SECOND_SLOTS];
+Slot second_slots[NUMBER_OF_SECOND_SLOTS];
 
 // Day
-typedef struct DaySlot {
+typedef struct DayItem {
   BmpContainer  image_container;
   Layer         layer;
   bool          loaded;
-} DaySlot;
-DaySlot day_slot;
+} DayItem;
+DayItem day_item;
 
+
+// General
+BmpContainer *load_digit_image_into_slot(Slot *slot, int digit_value, Layer *parent_layer, GRect frame, const int *digit_resource_ids);
+void unload_digit_image_from_slot(Slot *slot);
 
 // Display
 void display_time(PblTm *tick_time);
@@ -136,26 +132,18 @@ void display_day(PblTm *tick_time);
 // Time
 void display_time_value(int value, int row_number);
 void update_time_slot(TimeSlot *time_slot, int digit_value);
-void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, TimeSlot *time_slot, int digit_value);
-void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, TimeSlot *time_slot);
-void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context);
-void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
-void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
-void unload_digit_image_from_time_slot(TimeSlot *time_slot);
 GRect frame_for_time_slot(TimeSlot *time_slot);
+void slide_in_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
+void time_slot_slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context);
+void slide_out_digit_image_from_time_slot(TimeSlot *time_slot);
+void time_slot_slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
 
 // Date
 void display_date_value(int value, int part_number);
-void update_date_slot(DateSlot *date_slot, int digit_value);
-void load_digit_image_into_date_slot(DateSlot *date_slot, int digit_value);
-void unload_digit_image_from_date_slot(DateSlot *date_slot);
-GRect frame_for_date_slot(DateSlot *date_slot);
+void update_date_slot(Slot *date_slot, int digit_value);
 
 // Seconds
-void update_second_slot(SecondSlot *second_slot, int digit_value);
-void load_digit_image_into_second_slot(SecondSlot *second_slot, int digit_value);
-void unload_digit_image_from_second_slot(SecondSlot *second_slot);
-GRect frame_for_second_slot(SecondSlot *second_slot);
+void update_second_slot(Slot *second_slot, int digit_value);
 
 // Handlers
 void pbl_main(void *params);
@@ -163,6 +151,40 @@ void handle_init(AppContextRef ctx);
 void handle_second_tick(AppContextRef ctx, PebbleTickEvent *event);
 void handle_deinit(AppContextRef ctx);
 
+
+// General
+BmpContainer *load_digit_image_into_slot(Slot *slot, int digit_value, Layer *parent_layer, GRect frame, const int *digit_resource_ids) {
+  if (digit_value < 0 || digit_value > 9) {
+    return NULL;
+  }
+
+  if (slot->state != EMPTY_SLOT) {
+    return NULL;
+  }
+
+  slot->state = digit_value;
+
+  BmpContainer *image_container = &slot->image_container;
+
+  bmp_init_container(digit_resource_ids[digit_value], image_container);
+  layer_set_frame(&image_container->layer.layer, frame);
+  layer_add_child(parent_layer, &image_container->layer.layer);
+
+  return image_container;
+}
+
+void unload_digit_image_from_slot(Slot *slot) {
+  if (slot->state == EMPTY_SLOT) {
+    return;
+  }
+
+  BmpContainer *image_container = &slot->image_container;
+
+  layer_remove_from_parent(&image_container->layer.layer);
+  bmp_deinit_container(image_container);
+
+  slot->state = EMPTY_SLOT;
+}
 
 // Display
 void display_time(PblTm *tick_time) {
@@ -198,7 +220,7 @@ void display_seconds(PblTm *tick_time) {
   seconds = seconds % 100; // Maximum of two digits per row.
 
   for (int second_slot_number = 1; second_slot_number >= 0; second_slot_number--) {
-    SecondSlot *second_slot = &second_slots[second_slot_number];
+    Slot *second_slot = &second_slots[second_slot_number];
 
     update_second_slot(second_slot, seconds % 10);
     
@@ -207,17 +229,17 @@ void display_seconds(PblTm *tick_time) {
 }
 
 void display_day(PblTm *tick_time) {
-  BmpContainer *image_container = &day_slot.image_container;
+  BmpContainer *image_container = &day_item.image_container;
 
-  if (day_slot.loaded) {
+  if (day_item.loaded) {
     layer_remove_from_parent(&image_container->layer.layer);
     bmp_deinit_container(image_container);
   }
 
   bmp_init_container(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday], image_container);
-  layer_add_child(&day_slot.layer, &image_container->layer.layer);
+  layer_add_child(&day_item.layer, &image_container->layer.layer);
 
-  day_slot.loaded = true;
+  day_item.loaded = true;
 }
 
 // Time
@@ -236,7 +258,7 @@ void display_time_value(int value, int row_number) {
 }
 
 void update_time_slot(TimeSlot *time_slot, int digit_value) {
-  if (time_slot->state == digit_value) {
+  if (time_slot->slot.state == digit_value) {
     return;
   }
 
@@ -246,134 +268,111 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   }
 
   time_slot->animating = true;
-  PropertyAnimation *animation = &time_slot->animation;
 
-  if (time_slot->state == EMPTY_SLOT) {
-    slide_in_digit_image_into_time_slot(animation, time_slot, digit_value);
+  PropertyAnimation *animation;
+  if (time_slot->slot.state == EMPTY_SLOT) {
+    slide_in_digit_image_into_time_slot(time_slot, digit_value);
+    animation = &time_slot->slide_in_animation;
   }
   else {
     time_slot->new_state = digit_value;
 
-    slide_out_digit_image_from_time_slot(animation, time_slot);
+    slide_out_digit_image_from_time_slot(time_slot);
+    animation = &time_slot->slide_out_animation;
 
     animation_set_handlers(&animation->animation, (AnimationHandlers){
-      .stopped = (AnimationStoppedHandler)slide_out_animation_stopped
+      .stopped = (AnimationStoppedHandler)time_slot_slide_out_animation_stopped
     }, (void *)time_slot);
   }
 
   animation_schedule(&animation->animation);
 }
 
-void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, TimeSlot *time_slot, int digit_value) {
+GRect frame_for_time_slot(TimeSlot *time_slot) {
+  int x = MARGIN + (time_slot->slot.number % 2) * (TIME_IMAGE_WIDTH + TIME_SLOT_SPACE);
+  int y = MARGIN + (time_slot->slot.number / 2) * (TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE);
+
+  return GRect(x, y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
+}
+
+void slide_in_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   GRect to_frame = frame_for_time_slot(time_slot);
 
   int from_x = to_frame.origin.x;
   int from_y = to_frame.origin.y;
-  switch (time_slot->number) {
+  switch (time_slot->slot.number) {
     case 0:
-      from_x = -TIME_IMAGE_WIDTH;
+      from_x -= TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
       break;
     case 1:
-      from_y = -TIME_IMAGE_HEIGHT;
+      from_y -= TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
       break;
     case 2:
-      from_y = SCREEN_WIDTH;
+      from_y += TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
       break;
     case 3:
-      from_x = SCREEN_WIDTH;
+      from_x += TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
       break;
   }
   GRect from_frame = GRect(from_x, from_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
 
-  layer_set_frame(&time_slot->layer, from_frame);
+  BmpContainer *image_container = load_digit_image_into_slot(&time_slot->slot, digit_value, &time_layer, from_frame, TIME_IMAGE_RESOURCE_IDS);
 
-  unload_digit_image_from_time_slot(time_slot);
-  load_digit_image_into_time_slot(time_slot, digit_value);
-
-  property_animation_init_layer_frame(animation, &time_slot->layer, NULL, &to_frame);
+  PropertyAnimation *animation = &time_slot->slide_in_animation;
+  property_animation_init_layer_frame(animation, &image_container->layer.layer, &from_frame, &to_frame);
   animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
   animation_set_curve(    &animation->animation, AnimationCurveLinear);
   animation_set_handlers( &animation->animation, (AnimationHandlers){
-    .stopped = (AnimationStoppedHandler)slide_in_animation_stopped
+    .stopped = (AnimationStoppedHandler)time_slot_slide_in_animation_stopped
   }, (void *)time_slot);
 }
 
-void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, TimeSlot *time_slot) {
-  GRect from_frame = frame_for_time_slot(time_slot);
-
-  int to_x = from_frame.origin.x;
-  int to_y = from_frame.origin.y;
-  switch (time_slot->number) {
-    case 0:
-      to_y = -TIME_IMAGE_HEIGHT;
-      break;
-    case 1:
-      to_x = SCREEN_WIDTH;
-      break;
-    case 2:
-      to_x = -TIME_IMAGE_WIDTH;
-      break;
-    case 3:
-      to_y = SCREEN_WIDTH;
-      break;
-  }
-  GRect to_frame = GRect(to_x, to_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
-
-  property_animation_init_layer_frame(animation, &time_slot->layer, NULL, &to_frame);
-  animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
-  animation_set_curve(    &animation->animation, AnimationCurveLinear);
-
-  // Make sure to unload the image when the animation has finished!
-}
-
-void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context) {
+void time_slot_slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context) {
   TimeSlot *time_slot = (TimeSlot *)context;
 
   time_slot->animating = false;
 }
 
-void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context) {
+void slide_out_digit_image_from_time_slot(TimeSlot *time_slot) {
+  GRect from_frame = frame_for_time_slot(time_slot);
+
+  int to_x = from_frame.origin.x;
+  int to_y = from_frame.origin.y;
+  switch (time_slot->slot.number) {
+    case 0:
+      to_y -= TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      break;
+    case 1:
+      to_x += TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      break;
+    case 2:
+      to_x -= TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      break;
+    case 3:
+      to_y += TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      break;
+  }
+  GRect to_frame = GRect(to_x, to_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
+
+  BmpContainer *image_container = &time_slot->slot.image_container;
+
+  PropertyAnimation *animation = &time_slot->slide_out_animation;
+  property_animation_init_layer_frame(animation, &image_container->layer.layer, &from_frame, &to_frame);
+  animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
+  animation_set_curve(    &animation->animation, AnimationCurveLinear);
+
+  // Make sure to unload the digit image from the slot when the animation has finished!
+}
+
+void time_slot_slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context) {
   TimeSlot *time_slot = (TimeSlot *)context;
 
-  PropertyAnimation *animation = &time_slot->animation;
+  unload_digit_image_from_slot(&time_slot->slot);
 
-  slide_in_digit_image_into_time_slot(animation, time_slot, time_slot->new_state);
-  animation_schedule(&animation->animation);
+  slide_in_digit_image_into_time_slot(time_slot, time_slot->new_state);
+  animation_schedule(&time_slot->slide_in_animation.animation);
 
   time_slot->new_state = EMPTY_SLOT;
-}
-
-void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
-  if (digit_value < 0 || digit_value > 9) {
-    return;
-  }
-
-  if (time_slot->state != EMPTY_SLOT) {
-    return;
-  }
-
-  time_slot->state = digit_value;
-
-  bmp_init_container(TIME_IMAGE_RESOURCE_IDS[digit_value], &time_slot->image_container);
-  layer_add_child(&time_slot->layer, &time_slot->image_container.layer.layer);
-}
-
-void unload_digit_image_from_time_slot(TimeSlot *time_slot) {
-  if (time_slot->state == EMPTY_SLOT) {
-    return;
-  }
-
-  layer_remove_from_parent(&time_slot->image_container.layer.layer);
-  bmp_deinit_container(&time_slot->image_container);
-
-  time_slot->state = EMPTY_SLOT;
-}
-
-GRect frame_for_time_slot(TimeSlot *time_slot) {
-  int x = MARGIN + (time_slot->number % 2) * (TIME_IMAGE_WIDTH + TIME_SLOT_SPACE);
-  int y = MARGIN + (time_slot->number / 2) * (TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE);
-
-  return GRect(x, y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
 }
 
 // Date
@@ -383,7 +382,7 @@ void display_date_value(int value, int part_number) {
   for (int column_number = 1; column_number >= 0; column_number--) {
     int date_slot_number = (part_number * 2) + column_number;
 
-    DateSlot *date_slot = &date_slots[date_slot_number];
+    Slot *date_slot = &date_slots[date_slot_number];
 
     update_date_slot(date_slot, value % 10);
 
@@ -391,103 +390,36 @@ void display_date_value(int value, int part_number) {
   }
 }
 
-void update_date_slot(DateSlot *date_slot, int digit_value) {
+void update_date_slot(Slot *date_slot, int digit_value) {
   if (date_slot->state == digit_value) {
     return;
   }
 
-  unload_digit_image_from_date_slot(date_slot);
-  load_digit_image_into_date_slot(date_slot, digit_value);
-}
-
-void load_digit_image_into_date_slot(DateSlot *date_slot, int digit_value) {
-  if (digit_value < 0 || digit_value > 9) {
-    return;
-  }
-
-  if (date_slot->state != EMPTY_SLOT) {
-    return;
-  }
-
-  date_slot->state = digit_value;
-
-  BmpContainer *image_container = &date_slot->image_container;
-
-  bmp_init_container(DATE_IMAGE_RESOURCE_IDS[digit_value], image_container);
-  layer_set_frame(&image_container->layer.layer, frame_for_date_slot(date_slot));
-  layer_add_child(&date_layer, &image_container->layer.layer);
-}
-
-void unload_digit_image_from_date_slot(DateSlot *date_slot) {
-  if (date_slot->state == EMPTY_SLOT) {
-    return;
-  }
-
-  BmpContainer *image_container = &date_slot->image_container;
-
-  layer_remove_from_parent(&image_container->layer.layer);
-  bmp_deinit_container(image_container);
-
-  date_slot->state = EMPTY_SLOT;
-}
-
-GRect frame_for_date_slot(DateSlot *date_slot) {
   int x = date_slot->number * (DATE_IMAGE_WIDTH + MARGIN);
   if (date_slot->number >= 2) {
     x += 3; // 3 extra pixels of space between the day and month
   }
+  GRect frame =  GRect(x, 0, DATE_IMAGE_WIDTH, DATE_IMAGE_HEIGHT);
 
-  return GRect(x, 0, DATE_IMAGE_WIDTH, DATE_IMAGE_HEIGHT);
+  unload_digit_image_from_slot(date_slot);
+  load_digit_image_into_slot(date_slot, digit_value, &date_layer, frame, DATE_IMAGE_RESOURCE_IDS);
 }
 
 // Seconds
-void update_second_slot(SecondSlot *second_slot, int digit_value) {
+void update_second_slot(Slot *second_slot, int digit_value) {
   if (second_slot->state == digit_value) {
     return;
   }
 
-  unload_digit_image_from_second_slot(second_slot);
-  load_digit_image_into_second_slot(second_slot, digit_value);
-}
-
-void load_digit_image_into_second_slot(SecondSlot *second_slot, int digit_value) {
-  if (digit_value < 0 || digit_value > 9) {
-    return;
-  }
-
-  if (second_slot->state != EMPTY_SLOT) {
-    return;
-  }
-
-  second_slot->state = digit_value;
-
-  BmpContainer *image_container = &second_slot->image_container;
-
-  bmp_init_container(SECOND_IMAGE_RESOURCE_IDS[digit_value], image_container);
-  layer_set_frame(&image_container->layer.layer, frame_for_second_slot(second_slot));
-  layer_add_child(&seconds_layer, &image_container->layer.layer);
-}
-
-void unload_digit_image_from_second_slot(SecondSlot *second_slot) {
-  if (second_slot->state == EMPTY_SLOT) {
-    return;
-  }
-
-  BmpContainer *image_container = &second_slot->image_container;
-
-  layer_remove_from_parent(&image_container->layer.layer);
-  bmp_deinit_container(image_container);
-
-  second_slot->state = EMPTY_SLOT;
-}
-
-GRect frame_for_second_slot(SecondSlot *second_slot) {
-  return GRect(
+  GRect frame = GRect(
     second_slot->number * (SECOND_IMAGE_WIDTH + MARGIN), 
     0, 
     SECOND_IMAGE_WIDTH, 
     SECOND_IMAGE_HEIGHT
   );
+
+  unload_digit_image_from_slot(second_slot);
+  load_digit_image_into_slot(second_slot, digit_value, &seconds_layer, frame, SECOND_IMAGE_RESOURCE_IDS);
 }
 
 // Handlers
@@ -516,28 +448,28 @@ void handle_init(AppContextRef ctx) {
   // Time slots
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
     TimeSlot *time_slot = &time_slots[i];
-    time_slot->number     = i;
-    time_slot->state      = EMPTY_SLOT;
-    time_slot->new_state  = EMPTY_SLOT;
-    time_slot->animating  = false;
+    time_slot->slot.number  = i;
+    time_slot->slot.state   = EMPTY_SLOT;
+    time_slot->new_state    = EMPTY_SLOT;
+    time_slot->animating    = false;
   }
 
   // Date slots
   for (int i = 0; i < NUMBER_OF_DATE_SLOTS; i++) {
-    DateSlot *date_slot = &date_slots[i];
+    Slot *date_slot = &date_slots[i];
     date_slot->number = i;
     date_slot->state  = EMPTY_SLOT;
   }
 
   // Second slots
   for (int i = 0; i < NUMBER_OF_SECOND_SLOTS; i++) {
-    SecondSlot *second_slot = &second_slots[i];
+    Slot *second_slot = &second_slots[i];
     second_slot->number = i;
     second_slot->state  = EMPTY_SLOT;
   }
 
   // Day slot
-  day_slot.loaded = false;
+  day_item.loaded = false;
 
 
   // Root layer
@@ -547,13 +479,6 @@ void handle_init(AppContextRef ctx) {
   layer_init(&time_layer, GRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH));
   layer_set_clips(&time_layer, true);
   layer_add_child(root_layer, &time_layer);
-
-  // Time slots
-  for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
-    TimeSlot *time_slot = &time_slots[i];
-    layer_init(&time_slot->layer, frame_for_time_slot(time_slot));
-    layer_add_child(&time_layer, &time_slot->layer);
-  }
 
   // Date container
   int date_container_height = SCREEN_HEIGHT - SCREEN_WIDTH;
@@ -568,8 +493,8 @@ void handle_init(AppContextRef ctx) {
     DAY_IMAGE_WIDTH, 
     DAY_IMAGE_HEIGHT
   );
-  layer_init(&day_slot.layer, day_layer_frame);
-  layer_add_child(&date_container_layer, &day_slot.layer);
+  layer_init(&day_item.layer, day_layer_frame);
+  layer_add_child(&date_container_layer, &day_item.layer);
 
   // Date
   GRect date_layer_frame = GRectZero;
@@ -617,16 +542,16 @@ void handle_second_tick(AppContextRef ctx, PebbleTickEvent *event) {
 
 void handle_deinit(AppContextRef ctx) {
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
-    unload_digit_image_from_time_slot(&time_slots[i]);
+    unload_digit_image_from_slot(&time_slots[i].slot);
   }
   for (int i = 0; i < NUMBER_OF_DATE_SLOTS; i++) {
-    unload_digit_image_from_date_slot(&date_slots[i]);
+    unload_digit_image_from_slot(&date_slots[i]);
   }
   for (int i = 0; i < NUMBER_OF_SECOND_SLOTS; i++) {
-    unload_digit_image_from_second_slot(&second_slots[i]);
+    unload_digit_image_from_slot(&second_slots[i]);
   }
 
-  if (day_slot.loaded) {
-    bmp_deinit_container(&day_slot.image_container);
+  if (day_item.loaded) {
+    bmp_deinit_container(&day_item.image_container);
   }
 }
