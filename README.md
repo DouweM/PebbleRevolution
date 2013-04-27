@@ -2,7 +2,7 @@
 
 **This is the Revolution Watchface without the seconds; it also lacks animation and is in the American date format.**
 
-![Image Alt](https://github.com/iNate71/RevolutionLite/raw/master/images/picofwatchface.png)
+![Image Alt](https://github.com/iNate71/RevolutionLite/raw/master/images/picofwatchface.jpg)
 
 ### Download version 1.1
 * [RevolutionLite_v1.1.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.1.pbw)
