@@ -4,8 +4,8 @@
 
 ![Photo](http://d.pr/i/Qe9k+)
 
-### Download version 1.0
-* [RevolutionLite_v1.0.pbw](https://github.com/iNate71/PebbleRevolution/raw/master/build_versions/RevolutionLite_v1.0.pbw)
+### Download version 1.1
+* [RevolutionLite_v1.1.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.1.pbw)
 
 Implemented by Douwe Maan.
 
