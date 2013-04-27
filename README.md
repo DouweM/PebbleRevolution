@@ -1,6 +1,6 @@
 ## RevolutionLite Watchface
 
-**This is the Revolution Watchface without the seconds; it also lacks animation and is in the American date format.**
+**This is the Revolution Watchface without the seconds--instead, it displays the year; it also lacks animation and is in the American date format.**
 
 ![Image Alt](https://github.com/iNate71/RevolutionLite/raw/master/images/picofwatchface.jpg)
 
