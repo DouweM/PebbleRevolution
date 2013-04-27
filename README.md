@@ -1,8 +1,8 @@
-## Revolution watchface
+## RevolutionLite Watchface
+
+**This is the Revolution Watchface without the seconds; it also lacks animation and is in the American date format.**
 
 ![Photo](http://d.pr/i/Qe9k+)
-
-[Video of time animation](http://d.pr/v/nQWY)
 
 Implemented by Douwe Maan.
 
@@ -10,9 +10,10 @@ Envisioned as a watchface by Jean-Noël Mattern (Jnm), who posted it in the ["Wa
 
 Based on the display of the [Freebox Revolution](http://www.free.fr/adsl/freebox-revolution.html), which was designed by Philippe Starck.
 
-### Download version 1.3
-* [Revolution-1.3.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-1.3.pbw)
-* [Revolution-American-1.3.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American-1.3.pbw) (date formatted as MM-DD)
+### Download version 1.0
+* [RevolutionLite_v1.0.pbw](https://github.com/iNate71/PebbleRevolution/raw/master/build_versions/RevolutionLite_v1.0.pbw)
+
+
 
 ## License
 Copyright (c) 2013 [Douwe Maan](http://www.douwemaan.com/)

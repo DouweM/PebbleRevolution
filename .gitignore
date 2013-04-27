@@ -1,0 +1,12 @@
+.lock-waf_linux2_build
+.waf*/
+.DS_Store
+build/*
+!build/RevolutionLite.pbw
+include
+lib
+pebble_app.ld
+tools
+waf
+wscript
+resources/wscript
