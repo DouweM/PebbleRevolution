@@ -83,15 +83,17 @@ Layer date_container_layer;
 
 // Time
 typedef struct TimeSlot {
-  int           number;
-  BmpContainer  image_container;
-  Layer         layer;
-  int           state;
-  int           new_state;
-  bool          animating;
+  int               number;
+  BmpContainer      image_container;
+  Layer             layer;
+  int               state;
+  int               new_state;
+  PropertyAnimation animation;
+  bool              animating;
 } TimeSlot;
 
 #define NUMBER_OF_TIME_SLOTS 4
+Layer time_layer;
 TimeSlot time_slots[NUMBER_OF_TIME_SLOTS];
 
 // Date
@@ -130,7 +132,6 @@ void display_time(PblTm *tick_time);
 void display_date(PblTm *tick_time);
 void display_seconds(PblTm *tick_time);
 void display_day(PblTm *tick_time);
-void draw_date_container(Layer *layer, GContext *ctx);
 
 // Time
 void display_time_value(int value, int row_number);
@@ -219,11 +220,6 @@ void display_day(PblTm *tick_time) {
   day_slot.loaded = true;
 }
 
-void draw_date_container(Layer *layer, GContext *ctx) {
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  graphics_fill_rect(ctx, GRect(0, 0, layer->bounds.size.w, layer->bounds.size.h), 0, GCornerNone);
-}
-
 // Time
 void display_time_value(int value, int row_number) {
   value = value % 100; // Maximum of two digits per row.
@@ -250,9 +246,7 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   }
 
   time_slot->animating = true;
-
-  static PropertyAnimation animations[NUMBER_OF_TIME_SLOTS];
-  PropertyAnimation *animation = &animations[time_slot->number];
+  PropertyAnimation *animation = &time_slot->animation;
 
   if (time_slot->state == EMPTY_SLOT) {
     slide_in_digit_image_into_time_slot(animation, time_slot, digit_value);
@@ -341,8 +335,7 @@ void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, vo
 void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context) {
   TimeSlot *time_slot = (TimeSlot *)context;
 
-  static PropertyAnimation animations[NUMBER_OF_TIME_SLOTS];
-  PropertyAnimation *animation = &animations[time_slot->number];
+  PropertyAnimation *animation = &time_slot->animation;
 
   slide_in_digit_image_into_time_slot(animation, time_slot, time_slot->new_state);
   animation_schedule(&animation->animation);
@@ -519,6 +512,7 @@ void handle_init(AppContextRef ctx) {
 
   resource_init_current_app(&APP_RESOURCES);
 
+
   // Time slots
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
     TimeSlot *time_slot = &time_slots[i];
@@ -545,21 +539,26 @@ void handle_init(AppContextRef ctx) {
   // Day slot
   day_slot.loaded = false;
 
+
   // Root layer
   Layer *root_layer = window_get_root_layer(&window);
+
+  // Time
+  layer_init(&time_layer, GRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH));
+  layer_set_clips(&time_layer, true);
+  layer_add_child(root_layer, &time_layer);
 
   // Time slots
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
     TimeSlot *time_slot = &time_slots[i];
     layer_init(&time_slot->layer, frame_for_time_slot(time_slot));
-    layer_add_child(root_layer, &time_slot->layer);
+    layer_add_child(&time_layer, &time_slot->layer);
   }
 
+  // Date container
   int date_container_height = SCREEN_HEIGHT - SCREEN_WIDTH;
 
-  // Date container
   layer_init(&date_container_layer, GRect(0, SCREEN_WIDTH, SCREEN_WIDTH, date_container_height));
-  layer_set_update_proc(&date_container_layer, &draw_date_container);
   layer_add_child(root_layer, &date_container_layer);
 
   // Day
