@@ -15,9 +15,9 @@ PBL_APP_INFO(MY_UUID,
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
-
 // Settings
 #define USE_AMERICAN_DATE_FORMAT   true
+
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
