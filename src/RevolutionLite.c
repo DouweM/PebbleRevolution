@@ -71,7 +71,6 @@ const int DAY_IMAGE_RESOURCE_IDS[NUMBER_OF_DAY_IMAGES] = {
   RESOURCE_ID_IMAGE_DAY_6
 };
 
-
 // Main
 Window window;
 Layer date_container_layer;
@@ -239,51 +238,52 @@ void display_time_value(int value, int row_number) {
 }
 
 void update_time_slot(TimeSlot *time_slot, int digit_value) {
+ 
   if (time_slot->state == digit_value) {
     return;
   }
-
-  if (time_slot->state == digit_value) {
-    return;
-  }
-
+ 
   unload_digit_image_from_time_slot(time_slot);
+
+  if (time_slot->number !=0 || digit_value !=0) {
   load_digit_image_into_time_slot(time_slot, digit_value);
+  }
 }
-
-
+ 
+ 
 void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   if (digit_value < 0 || digit_value > 9) {
     return;
   }
-
+ 
   if (time_slot->state != EMPTY_SLOT) {
     return;
   }
-
+ 
   time_slot->state = digit_value;
-
+ 
   bmp_init_container(TIME_IMAGE_RESOURCE_IDS[digit_value], &time_slot->image_container);
   layer_add_child(&time_slot->layer, &time_slot->image_container.layer.layer);
 }
-
+ 
 void unload_digit_image_from_time_slot(TimeSlot *time_slot) {
   if (time_slot->state == EMPTY_SLOT) {
     return;
   }
-
+ 
   layer_remove_from_parent(&time_slot->image_container.layer.layer);
   bmp_deinit_container(&time_slot->image_container);
-
+ 
   time_slot->state = EMPTY_SLOT;;
 }
-
+ 
 GRect frame_for_time_slot(TimeSlot *time_slot) {
   int x = MARGIN + (time_slot->number % 2) * (TIME_IMAGE_WIDTH + TIME_SLOT_SPACE);
   int y = MARGIN + (time_slot->number / 2) * (TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE);
-
+ 
   return GRect(x, y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
 }
+
 
 // Date
 void display_date_value(int value, int part_number) {
