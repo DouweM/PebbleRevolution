@@ -67,7 +67,7 @@ const int SECOND_IMAGE_RESOURCE_IDS[NUMBER_OF_SECOND_IMAGES] = {
   RESOURCE_ID_IMAGE_SECOND_7, RESOURCE_ID_IMAGE_SECOND_8, RESOURCE_ID_IMAGE_SECOND_9
 };
 
-#define NUMBER_OF_DAY_IMAGES  7
+#define NUMBER_OF_DAY_IMAGES 7
 const int DAY_IMAGE_RESOURCE_IDS[NUMBER_OF_DAY_IMAGES] = {
   RESOURCE_ID_IMAGE_DAY_0, RESOURCE_ID_IMAGE_DAY_1, RESOURCE_ID_IMAGE_DAY_2, 
   RESOURCE_ID_IMAGE_DAY_3, RESOURCE_ID_IMAGE_DAY_4, RESOURCE_ID_IMAGE_DAY_5, 
@@ -302,16 +302,16 @@ void slide_in_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   int from_y = to_frame.origin.y;
   switch (time_slot->slot.number) {
     case 0:
-      from_x -= TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      from_x -= TIME_IMAGE_WIDTH + MARGIN;
       break;
     case 1:
-      from_y -= TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      from_y -= TIME_IMAGE_HEIGHT + MARGIN;
       break;
     case 2:
-      from_y += TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      from_y += TIME_IMAGE_HEIGHT + MARGIN;
       break;
     case 3:
-      from_x += TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      from_x += TIME_IMAGE_WIDTH + MARGIN;
       break;
   }
   GRect from_frame = GRect(from_x, from_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
@@ -340,16 +340,16 @@ void slide_out_digit_image_from_time_slot(TimeSlot *time_slot) {
   int to_y = from_frame.origin.y;
   switch (time_slot->slot.number) {
     case 0:
-      to_y -= TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      to_y -= TIME_IMAGE_HEIGHT + MARGIN;
       break;
     case 1:
-      to_x += TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      to_x += TIME_IMAGE_WIDTH + MARGIN;
       break;
     case 2:
-      to_x -= TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      to_x -= TIME_IMAGE_WIDTH + MARGIN;
       break;
     case 3:
-      to_y += TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      to_y += TIME_IMAGE_HEIGHT + MARGIN;
       break;
   }
   GRect to_frame = GRect(to_x, to_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
