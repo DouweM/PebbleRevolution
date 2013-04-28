@@ -11,7 +11,7 @@
 #define MY_UUID { 0xAF, 0x25, 0x74, 0x3A, 0x2C, 0xC9, 0x4F, 0x16, 0x92, 0x6B, 0x87, 0x97, 0x44, 0x0A, 0xC8, 0xA1 }
 PBL_APP_INFO(MY_UUID,
              "RevolutionLite", "Nate Gantt",
-             1, 1, /* App version */
+             1, 2, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
@@ -80,17 +80,28 @@ Layer year_layer;
 #define EMPTY_SLOT -1
 
 // Time
+typedef struct TimeSlot {
+  int           number;
+  BmpContainer  image_container;
+  Layer         layer;
+  int           state;
+  int           new_state;
+} TimeSlot;
+
 #define NUMBER_OF_TIME_SLOTS 4
-BmpContainer time_image_containers[NUMBER_OF_TIME_SLOTS];
-Layer time_slot_layers[NUMBER_OF_TIME_SLOTS];
-int time_slot_state[NUMBER_OF_TIME_SLOTS]       = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
-int new_time_slot_state[NUMBER_OF_TIME_SLOTS]   = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
+TimeSlot time_slots[NUMBER_OF_TIME_SLOTS];
+
 
 // Date
+typedef struct DateSlot {
+  int           number;
+  BmpContainer  image_container;
+  int           state;
+} DateSlot;
+
 #define NUMBER_OF_DATE_SLOTS 4
 Layer date_layer;
-BmpContainer date_image_containers[NUMBER_OF_DATE_SLOTS];
-int date_slot_state[NUMBER_OF_DATE_SLOTS] = { EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT, EMPTY_SLOT };
+DateSlot date_slots[NUMBER_OF_DATE_SLOTS];
 
 // Year
 #define NUMBER_OF_YEAR_SLOTS 2
@@ -98,9 +109,12 @@ BmpContainer year_image_containers[NUMBER_OF_YEAR_SLOTS];
 bool year_images_loaded;
 
 // Day
-Layer day_layer;
-BmpContainer day_image_container;
-bool day_image_loaded;
+typedef struct DaySlot {
+  BmpContainer  image_container;
+  Layer         layer;
+  bool          loaded;
+} DaySlot;
+DaySlot day_slot;
 
 
 // Display
@@ -112,17 +126,17 @@ void draw_date_container(Layer *layer, GContext *ctx);
 
 // Time
 void display_time_value(int value, int row_number);
-void update_time_slot(int time_slot_number, int digit_value);
-void load_digit_image_into_time_slot(int time_slot_number, int digit_value);
-void unload_digit_image_from_time_slot(int time_slot_number);
-GRect frame_for_time_slot(int time_slot_number);
+void update_time_slot(TimeSlot *time_slot, int digit_value);
+void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
+void unload_digit_image_from_time_slot(TimeSlot *time_slot);
+GRect frame_for_time_slot(TimeSlot *time_slot);
 
 // Date
 void display_date_value(int value, int part_number);
-void update_date_slot(int date_slot_number, int digit_value);
-void load_digit_image_into_date_slot(int date_slot_number, int digit_value);
-void unload_digit_image_from_date_slot(int date_slot_number);
-GRect frame_for_date_slot(int date_slot_number);
+void update_date_slot(DateSlot *date_slot, int digit_value);
+void load_digit_image_into_date_slot(DateSlot *date_slot, int digit_value);
+void unload_digit_image_from_date_slot(DateSlot *date_slot);
+GRect frame_for_date_slot(DateSlot *date_slot);
 
 // Handlers
 void pbl_main(void *params);
@@ -191,15 +205,17 @@ void display_year(PblTm *tick_time) {
 }
 
 void display_day(PblTm *tick_time) {
-  if (day_image_loaded) {
-    layer_remove_from_parent(&day_image_container.layer.layer);
-    bmp_deinit_container(&day_image_container);
+  BmpContainer *image_container = &day_slot.image_container;
+
+  if (day_slot.loaded) {
+    layer_remove_from_parent(&image_container->layer.layer);
+    bmp_deinit_container(image_container);
   }
 
-  bmp_init_container(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday], &day_image_container);
-  layer_add_child(&day_layer, &day_image_container.layer.layer);
+  bmp_init_container(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday], image_container);
+  layer_add_child(&day_slot.layer, &image_container->layer.layer);
 
-  day_image_loaded = true;
+  day_slot.loaded = true;
 }
 
 void draw_date_container(Layer *layer, GContext *ctx) {
@@ -214,59 +230,57 @@ void display_time_value(int value, int row_number) {
   for (int column_number = 1; column_number >= 0; column_number--) {
     int time_slot_number = (row_number * 2) + column_number;
 
-    update_time_slot(time_slot_number, value % 10);
+    TimeSlot *time_slot = &time_slots[time_slot_number];
+
+    update_time_slot(time_slot, value % 10);
 
     value = value / 10;
   }
 }
 
-void update_time_slot(int time_slot_number, int digit_value) {
-  if (time_slot_number < 0 || time_slot_number >= NUMBER_OF_TIME_SLOTS) {
+void update_time_slot(TimeSlot *time_slot, int digit_value) {
+  if (time_slot->state == digit_value) {
     return;
   }
 
-  if (time_slot_state[time_slot_number] == digit_value) {
+  if (time_slot->state == digit_value) {
     return;
   }
 
-  unload_digit_image_from_time_slot(time_slot_number);
-  load_digit_image_into_time_slot(time_slot_number, digit_value);
+  unload_digit_image_from_time_slot(time_slot);
+  load_digit_image_into_time_slot(time_slot, digit_value);
 }
 
 
-void load_digit_image_into_time_slot(int time_slot_number, int digit_value) {
+void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   if (digit_value < 0 || digit_value > 9) {
     return;
   }
 
-  if (time_slot_state[time_slot_number] != EMPTY_SLOT) {
+  if (time_slot->state != EMPTY_SLOT) {
     return;
   }
 
-  time_slot_state[time_slot_number] = digit_value;
+  time_slot->state = digit_value;
 
-  BmpContainer *image_container = &time_image_containers[time_slot_number];
-
-  bmp_init_container(TIME_IMAGE_RESOURCE_IDS[digit_value], image_container);
-  layer_add_child(&time_slot_layers[time_slot_number], &image_container->layer.layer);
+  bmp_init_container(TIME_IMAGE_RESOURCE_IDS[digit_value], &time_slot->image_container);
+  layer_add_child(&time_slot->layer, &time_slot->image_container.layer.layer);
 }
 
-void unload_digit_image_from_time_slot(int time_slot_number) {
-  if (time_slot_state[time_slot_number] == EMPTY_SLOT) {
+void unload_digit_image_from_time_slot(TimeSlot *time_slot) {
+  if (time_slot->state == EMPTY_SLOT) {
     return;
   }
 
-  BmpContainer *image_container = &time_image_containers[time_slot_number];
+  layer_remove_from_parent(&time_slot->image_container.layer.layer);
+  bmp_deinit_container(&time_slot->image_container);
 
-  layer_remove_from_parent(&image_container->layer.layer);
-  bmp_deinit_container(image_container);
-
-  time_slot_state[time_slot_number] = EMPTY_SLOT;
+  time_slot->state = EMPTY_SLOT;;
 }
 
-GRect frame_for_time_slot(int time_slot_number) {
-  int x = MARGIN + (time_slot_number % 2) * (TIME_IMAGE_WIDTH + TIME_SLOT_SPACE);
-  int y = MARGIN + (time_slot_number / 2) * (TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE);
+GRect frame_for_time_slot(TimeSlot *time_slot) {
+  int x = MARGIN + (time_slot->number % 2) * (TIME_IMAGE_WIDTH + TIME_SLOT_SPACE);
+  int y = MARGIN + (time_slot->number / 2) * (TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE);
 
   return GRect(x, y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
 }
@@ -278,59 +292,57 @@ void display_date_value(int value, int part_number) {
   for (int column_number = 1; column_number >= 0; column_number--) {
     int date_slot_number = (part_number * 2) + column_number;
 
-    update_date_slot(date_slot_number, value % 10);
+    DateSlot *date_slot = &date_slots[date_slot_number];
+
+    update_date_slot(date_slot, value % 10);
 
     value = value / 10;
   }
 }
 
-void update_date_slot(int date_slot_number, int digit_value) {
-  if (date_slot_number < 0 || date_slot_number >= NUMBER_OF_DATE_SLOTS) {
+void update_date_slot(DateSlot *date_slot, int digit_value) {
+  if (date_slot->state == digit_value) {
     return;
   }
 
-  if (date_slot_state[date_slot_number] == digit_value) {
-    return;
-  }
-
-  unload_digit_image_from_date_slot(date_slot_number);
-  load_digit_image_into_date_slot(date_slot_number, digit_value);
+  unload_digit_image_from_date_slot(date_slot);
+  load_digit_image_into_date_slot(date_slot, digit_value);
 }
 
-void load_digit_image_into_date_slot(int date_slot_number, int digit_value) {
+void load_digit_image_into_date_slot(DateSlot *date_slot, int digit_value) {
   if (digit_value < 0 || digit_value > 9) {
     return;
   }
 
-  if (date_slot_state[date_slot_number] != EMPTY_SLOT) {
+  if (date_slot->state != EMPTY_SLOT) {
     return;
   }
 
-  date_slot_state[date_slot_number] = digit_value;
+  date_slot->state = digit_value;
 
-  BmpContainer *image_container = &date_image_containers[date_slot_number];
+  BmpContainer *image_container = &date_slot->image_container;
 
   bmp_init_container(DATE_IMAGE_RESOURCE_IDS[digit_value], image_container);
-  layer_set_frame(&image_container->layer.layer, frame_for_date_slot(date_slot_number));
+  layer_set_frame(&image_container->layer.layer, frame_for_date_slot(date_slot));
   layer_add_child(&date_layer, &image_container->layer.layer);
 }
 
-void unload_digit_image_from_date_slot(int date_slot_number) {
-  if (date_slot_state[date_slot_number] == EMPTY_SLOT) {
+void unload_digit_image_from_date_slot(DateSlot *date_slot) {
+  if (date_slot->state == EMPTY_SLOT) {
     return;
   }
 
-  BmpContainer *image_container = &date_image_containers[date_slot_number];
+  BmpContainer *image_container = &date_slot->image_container;
 
   layer_remove_from_parent(&image_container->layer.layer);
   bmp_deinit_container(image_container);
 
-  date_slot_state[date_slot_number] = EMPTY_SLOT;
+  date_slot->state = EMPTY_SLOT;
 }
 
-GRect frame_for_date_slot(int date_slot_number) {
-  int x = date_slot_number * (DATE_IMAGE_WIDTH + MARGIN);
-  if (date_slot_number >= 2) {
+GRect frame_for_date_slot(DateSlot *date_slot) {
+  int x = date_slot->number * (DATE_IMAGE_WIDTH + MARGIN);
+  if (date_slot->number >= 2) {
     x += 3; // 3 extra pixels of space between the day and month
   }
 
@@ -353,6 +365,7 @@ void pbl_main(void *params) {
   app_event_loop(params, &handlers);
 }
 
+
 void handle_init(AppContextRef ctx) {
   window_init(&window, "RevolutionLite");
   window_stack_push(&window, true /* Animated */);
@@ -360,14 +373,32 @@ void handle_init(AppContextRef ctx) {
 
   resource_init_current_app(&APP_RESOURCES);
 
+  // Time slots
+  for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
+    TimeSlot *time_slot = &time_slots[i];
+    time_slot->number     = i;
+    time_slot->state      = EMPTY_SLOT;
+    time_slot->new_state  = EMPTY_SLOT;
+  }
+
+  // Date slots
+  for (int i = 0; i < NUMBER_OF_DATE_SLOTS; i++) {
+    DateSlot *date_slot = &date_slots[i];
+    date_slot->number = i;
+    date_slot->state  = EMPTY_SLOT;
+  }
+
+  // Day slot
+  day_slot.loaded = false;
 
   // Root layer
   Layer *root_layer = window_get_root_layer(&window);
 
   // Time slots
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
-    layer_init(&time_slot_layers[i], frame_for_time_slot(i));
-    layer_add_child(root_layer, &time_slot_layers[i]);
+    TimeSlot *time_slot = &time_slots[i];
+    layer_init(&time_slot->layer, frame_for_time_slot(time_slot));
+    layer_add_child(root_layer, &time_slot->layer);
   }
 
   int date_container_height = SCREEN_HEIGHT - SCREEN_WIDTH;
@@ -384,8 +415,8 @@ void handle_init(AppContextRef ctx) {
     DAY_IMAGE_WIDTH, 
     DAY_IMAGE_HEIGHT
   );
-  layer_init(&day_layer, day_layer_frame);
-  layer_add_child(&date_container_layer, &day_layer);
+  layer_init(&day_slot.layer, day_layer_frame);
+  layer_add_child(&date_container_layer, &day_slot.layer);
 
   // Date
   GRect date_layer_frame = GRectZero;
@@ -416,6 +447,7 @@ void handle_init(AppContextRef ctx) {
   display_day(&tick_time);
   display_date(&tick_time);
   display_year(&tick_time);
+
 }
 
 void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event) {
@@ -424,7 +456,6 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event) {
     display_day(event->tick_time);
     display_date(event->tick_time);
   }
-
   if ((event->units_changed & YEAR_UNIT) == YEAR_UNIT) {
     display_year(event->tick_time);
   }
@@ -433,16 +464,16 @@ void handle_minute_tick(AppContextRef ctx, PebbleTickEvent *event) {
 
 void handle_deinit(AppContextRef ctx) {
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
-    unload_digit_image_from_time_slot(i);
+    unload_digit_image_from_time_slot(&time_slots[i]);
   }
   for (int i = 0; i < NUMBER_OF_DATE_SLOTS; i++) {
-    unload_digit_image_from_date_slot(i);
+    unload_digit_image_from_date_slot(&date_slots[i]);
   }
   for (int i = 0; i < NUMBER_OF_YEAR_SLOTS; i++) {
     bmp_deinit_container(&year_image_containers[i]);
   }
 
-  if (day_image_loaded) {
-    bmp_deinit_container(&day_image_container);
+  if (day_slot.loaded) {
+    bmp_deinit_container(&day_slot.image_container);
   }
 }
