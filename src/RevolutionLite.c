@@ -11,12 +11,13 @@
 #define MY_UUID { 0xAF, 0x25, 0x74, 0x3A, 0x2C, 0xC9, 0x4F, 0x16, 0x92, 0x6B, 0x87, 0x97, 0x44, 0x0A, 0xC8, 0xA1 }
 PBL_APP_INFO(MY_UUID,
              "RevolutionLite", "Nate Gantt",
-             1, 2, /* App version */
+             1, 5, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
 // Settings
 #define USE_AMERICAN_DATE_FORMAT   true
+#define HAVE_NO_ZEROS   true
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
@@ -245,9 +246,13 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
  
   unload_digit_image_from_time_slot(time_slot);
 
+  #if HAVE_NO_ZEROS
   if (time_slot->number !=0 || digit_value !=0) {
   load_digit_image_into_time_slot(time_slot, digit_value);
   }
+  #else
+  load_digit_image_into_time_slot(time_slot, digit_value);
+  #endif
 }
  
  

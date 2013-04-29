@@ -5,8 +5,8 @@
 ![Image Alt](https://github.com/iNate71/RevolutionLite/raw/master/images/picofwatchface.jpg)
 
 ### Download version 1.1
-* [RevolutionLite_v1.1.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.1.pbw)
-* [RevolutionLIte_v1.3.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.3.pbw) (Hours are single digits)
+* [RevolutionLite_v1.5.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.5.pbw)
+* [RevolutionLite_v1.5_Zeroless.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.5_Zeroless.pbw) (Hours are single digits)
 
 Implemented by Douwe Maan.
 
