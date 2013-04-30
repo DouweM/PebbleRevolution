@@ -91,7 +91,6 @@ typedef struct TimeSlot {
 #define NUMBER_OF_TIME_SLOTS 4
 TimeSlot time_slots[NUMBER_OF_TIME_SLOTS];
 
-
 // Date
 typedef struct DateSlot {
   int           number;
