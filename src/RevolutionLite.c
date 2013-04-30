@@ -601,3 +601,4 @@ void handle_deinit(AppContextRef ctx) {
   if (day_slot.loaded) {
     bmp_deinit_container(&day_slot.image_container);
   }
+}
