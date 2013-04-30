@@ -18,6 +18,7 @@ PBL_APP_INFO(MY_UUID,
 // Settings
 #define USE_AMERICAN_DATE_FORMAT   true
 #define HAVE_NO_ZEROS   true
+#define USE_ANIMATION   false
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
@@ -81,16 +82,19 @@ Layer year_layer;
 
 // Time
 typedef struct TimeSlot {
-  int           number;
-  BmpContainer  image_container;
-  Layer         layer;
-  int           state;
-  int           new_state;
+  int               number;
+  BmpContainer      image_container;
+  Layer             layer;
+  int               state;
+  int               new_state;
+#if USE_ANIMATION
+  PropertyAnimation animation;
+  bool              animating;
+#endif
 } TimeSlot;
 
 #define NUMBER_OF_TIME_SLOTS 4
 TimeSlot time_slots[NUMBER_OF_TIME_SLOTS];
-
 
 // Date
 typedef struct DateSlot {
@@ -127,6 +131,12 @@ void draw_date_container(Layer *layer, GContext *ctx);
 // Time
 void display_time_value(int value, int row_number);
 void update_time_slot(TimeSlot *time_slot, int digit_value);
+#if USE_ANIMATION
+void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, TimeSlot *time_slot, int digit_value);
+void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, TimeSlot *time_slot);
+void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context);
+void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
+#endif
 void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
 void unload_digit_image_from_time_slot(TimeSlot *time_slot);
 GRect frame_for_time_slot(TimeSlot *time_slot);
@@ -243,7 +253,32 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   if (time_slot->state == digit_value) {
     return;
   }
- 
+  
+#if USE_ANIMATION
+  if (time_slot->animating) {
+    return;
+  }
+
+  time_slot->animating = true;
+  PropertyAnimation *animation = &time_slot->animation;
+  
+  if (time_slot->state == EMPTY_SLOT) {
+    slide_in_digit_image_into_time_slot(animation, time_slot, digit_value);
+  }
+  else {
+    time_slot->new_state = digit_value;
+
+    slide_out_digit_image_from_time_slot(animation, time_slot);
+
+    animation_set_handlers(&animation->animation, (AnimationHandlers){
+      .stopped = (AnimationStoppedHandler)slide_out_animation_stopped
+    }, (void *)time_slot);
+  }
+
+  animation_schedule(&animation->animation);
+}
+
+#else
   unload_digit_image_from_time_slot(time_slot);
 
   #if HAVE_NO_ZEROS
@@ -253,9 +288,91 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   #else
   load_digit_image_into_time_slot(time_slot, digit_value);
   #endif
+
+#endif
 }
- 
- 
+
+#if USE_ANIMATION
+void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, TimeSlot *time_slot, int digit_value) {
+  GRect to_frame = frame_for_time_slot(time_slot);
+
+  int from_x = to_frame.origin.x;
+  int from_y = to_frame.origin.y;
+  switch (time_slot->number) {
+    case 0:
+      from_x = -TIME_IMAGE_WIDTH;
+      break;
+    case 1:
+      from_y = -TIME_IMAGE_HEIGHT;
+      break;
+    case 2:
+      from_y = SCREEN_WIDTH;
+      break;
+    case 3:
+      from_x = SCREEN_WIDTH;
+      break;
+  }
+  GRect from_frame = GRect(from_x, from_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
+
+  layer_set_frame(&time_slot->layer, from_frame);
+
+  unload_digit_image_from_time_slot(time_slot);
+  load_digit_image_into_time_slot(time_slot, digit_value);
+
+  property_animation_init_layer_frame(animation, &time_slot->layer, NULL, &to_frame);
+  animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
+  animation_set_curve(    &animation->animation, AnimationCurveLinear);
+  animation_set_handlers( &animation->animation, (AnimationHandlers){
+    .stopped = (AnimationStoppedHandler)slide_in_animation_stopped
+  }, (void *)time_slot);
+}
+
+void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, TimeSlot *time_slot) {
+  GRect from_frame = frame_for_time_slot(time_slot);
+
+  int to_x = from_frame.origin.x;
+  int to_y = from_frame.origin.y;
+  switch (time_slot->number) {
+    case 0:
+      to_y = -TIME_IMAGE_HEIGHT;
+      break;
+    case 1:
+      to_x = SCREEN_WIDTH;
+      break;
+    case 2:
+      to_x = -TIME_IMAGE_WIDTH;
+      break;
+    case 3:
+      to_y = SCREEN_WIDTH;
+      break;
+  }
+  GRect to_frame = GRect(to_x, to_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
+
+  property_animation_init_layer_frame(animation, &time_slot->layer, NULL, &to_frame);
+  animation_set_duration( &animation->animation, TIME_SLOT_ANIMATION_DURATION);
+  animation_set_curve(    &animation->animation, AnimationCurveLinear);
+
+  // Make sure to unload the image when the animation has finished!
+}
+
+void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context) {
+  TimeSlot *time_slot = (TimeSlot *)context;
+
+  time_slot->animating = false;
+}
+
+void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context) {
+  TimeSlot *time_slot = (TimeSlot *)context;
+
+  PropertyAnimation *animation = &time_slot->animation;
+
+  slide_in_digit_image_into_time_slot(animation, time_slot, time_slot->new_state);
+  animation_schedule(&animation->animation);
+
+  time_slot->new_state = EMPTY_SLOT;
+}
+#endif
+
 void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   if (digit_value < 0 || digit_value > 9) {
     return;
@@ -384,6 +501,9 @@ void handle_init(AppContextRef ctx) {
     time_slot->number     = i;
     time_slot->state      = EMPTY_SLOT;
     time_slot->new_state  = EMPTY_SLOT;
+  #if USE_ANIMATION
+    time_slot->animating  = false;
+  #endif
   }
 
   // Date slots
