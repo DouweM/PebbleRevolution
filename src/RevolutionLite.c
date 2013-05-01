@@ -302,16 +302,16 @@ void slide_in_digit_image_into_time_slot(PropertyAnimation *slide_in_animation, 
   int from_y = to_frame.origin.y;
   switch (time_slot->number) {
     case 0:
-      from_x -= TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      from_x = -TIME_IMAGE_WIDTH;
       break;
     case 1:
-      from_y -= TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      from_y = -TIME_IMAGE_HEIGHT;
       break;
     case 2:
-      from_y += TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      from_y = SCREEN_WIDTH;
       break;
     case 3:
-      from_x += TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      from_x = SCREEN_WIDTH;
       break;
   }
   GRect from_frame = GRect(from_x, from_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
@@ -336,16 +336,16 @@ void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, TimeSlot
   int to_y = from_frame.origin.y;
   switch (time_slot->number) {
     case 0:
-      to_y -= TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      to_y = -TIME_IMAGE_HEIGHT;
       break;
     case 1:
-      to_x += TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      to_x = SCREEN_WIDTH;
       break;
     case 2:
-      to_x -= TIME_IMAGE_WIDTH + TIME_SLOT_SPACE;
+      to_x = -TIME_IMAGE_WIDTH;
       break;
     case 3:
-      to_y += TIME_IMAGE_HEIGHT + TIME_SLOT_SPACE;
+      to_y = SCREEN_WIDTH;
       break;
   }
   GRect to_frame = GRect(to_x, to_y, TIME_IMAGE_WIDTH, TIME_IMAGE_HEIGHT);
