@@ -18,8 +18,12 @@ PBL_APP_INFO(MY_UUID,
 // Settings
 #define TIME_SLOT_ANIMATION_DURATION  450
 #define USE_AMERICAN_DATE_FORMAT   true
+<<<<<<< HEAD
 #define HAVE_NO_ZEROS   false
 #define USE_ANIMATION   true
+=======
+#define HAVE_NO_ZEROS   true
+>>>>>>> parent of 6d93f61... Added if definitions for animations
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
@@ -83,6 +87,7 @@ Layer year_layer;
 
 // Time
 typedef struct TimeSlot {
+<<<<<<< HEAD
   int               number;
   BmpContainer      image_container;
   Layer             layer;
@@ -93,10 +98,18 @@ typedef struct TimeSlot {
   PropertyAnimation slide_in_animation;
   bool              animating;
 #endif
+=======
+  int           number;
+  BmpContainer  image_container;
+  Layer         layer;
+  int           state;
+  int           new_state;
+>>>>>>> parent of 6d93f61... Added if definitions for animations
 } TimeSlot;
 
 #define NUMBER_OF_TIME_SLOTS 4
 TimeSlot time_slots[NUMBER_OF_TIME_SLOTS];
+
 
 // Date
 typedef struct DateSlot {
@@ -133,12 +146,15 @@ void draw_date_container(Layer *layer, GContext *ctx);
 // Time
 void display_time_value(int value, int row_number);
 void update_time_slot(TimeSlot *time_slot, int digit_value);
+<<<<<<< HEAD
 #if USE_ANIMATION
 void slide_in_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
 void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context);
 void slide_out_digit_image_from_time_slot(Animation *slide_out_animation, TimeSlot *time_slot);
 void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
 #endif
+=======
+>>>>>>> parent of 6d93f61... Added if definitions for animations
 void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
 void unload_digit_image_from_time_slot(TimeSlot *time_slot);
 GRect frame_for_time_slot(TimeSlot *time_slot);
@@ -255,6 +271,7 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   if (time_slot->state == digit_value) {
     return;
   }
+<<<<<<< HEAD
   
 #if USE_ANIMATION
   if (time_slot->animating) {
@@ -281,6 +298,9 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
 
   animation_schedule(&animation->animation);
 #else
+=======
+ 
+>>>>>>> parent of 6d93f61... Added if definitions for animations
   unload_digit_image_from_time_slot(time_slot);
 
   #if HAVE_NO_ZEROS
@@ -290,6 +310,7 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   #else
   load_digit_image_into_time_slot(time_slot, digit_value);
   #endif
+<<<<<<< HEAD
 
 #endif
 }
@@ -373,9 +394,11 @@ void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, 
   animation_schedule(&animation->animation);
 
   time_slot->new_state = EMPTY_SLOT;
+=======
+>>>>>>> parent of 6d93f61... Added if definitions for animations
 }
-#endif
-
+ 
+ 
 void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   if (digit_value < 0 || digit_value > 9) {
     return;
@@ -504,9 +527,6 @@ void handle_init(AppContextRef ctx) {
     time_slot->number     = i;
     time_slot->state      = EMPTY_SLOT;
     time_slot->new_state  = EMPTY_SLOT;
-  #if USE_ANIMATION
-    time_slot->animating  = false;
-  #endif
   }
 
   // Date slots
