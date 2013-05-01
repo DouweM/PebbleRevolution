@@ -11,14 +11,15 @@
 #define MY_UUID { 0xAF, 0x25, 0x74, 0x3A, 0x2C, 0xC9, 0x4F, 0x16, 0x92, 0x6B, 0x87, 0x97, 0x44, 0x0A, 0xC8, 0xA1 }
 PBL_APP_INFO(MY_UUID,
              "RevolutionLite", "Nate Gantt",
-             1, 5, /* App version */
+             1, 6, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
 // Settings
+#define TIME_SLOT_ANIMATION_DURATION  450
 #define USE_AMERICAN_DATE_FORMAT   true
-#define HAVE_NO_ZEROS   true
-#define USE_ANIMATION   false
+#define HAVE_NO_ZEROS   false
+#define USE_ANIMATION   true
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
@@ -88,7 +89,8 @@ typedef struct TimeSlot {
   int               state;
   int               new_state;
 #if USE_ANIMATION
-  PropertyAnimation animation;
+  PropertyAnimation slide_out_animation;
+  PropertyAnimation slide_in_animation;
   bool              animating;
 #endif
 } TimeSlot;
@@ -132,9 +134,9 @@ void draw_date_container(Layer *layer, GContext *ctx);
 void display_time_value(int value, int row_number);
 void update_time_slot(TimeSlot *time_slot, int digit_value);
 #if USE_ANIMATION
-void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, TimeSlot *time_slot, int digit_value);
-void slide_out_digit_image_from_time_slot(PropertyAnimation *animation, TimeSlot *time_slot);
+void slide_in_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
 void slide_in_animation_stopped(Animation *slide_in_animation, bool finished, void *context);
+void slide_out_digit_image_from_time_slot(Animation *slide_out_animation, TimeSlot *time_slot);
 void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
 #endif
 void load_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value);
@@ -260,15 +262,17 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   }
 
   time_slot->animating = true;
-  PropertyAnimation *animation = &time_slot->animation;
-  
+  PropertyAnimation *animation;
+
   if (time_slot->state == EMPTY_SLOT) {
-    slide_in_digit_image_into_time_slot(animation, time_slot, digit_value);
+    slide_in_digit_image_into_time_slot(time_slot, digit_value);
+    animation = &time_slot->animation;
   }
   else {
     time_slot->new_state = digit_value;
 
-    slide_out_digit_image_from_time_slot(animation, time_slot);
+    slide_out_digit_image_from_time_slot(time_slot);
+    animation = &time_slot->slide_out_animation;
 
     animation_set_handlers(&animation->animation, (AnimationHandlers){
       .stopped = (AnimationStoppedHandler)slide_out_animation_stopped
@@ -276,8 +280,6 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
   }
 
   animation_schedule(&animation->animation);
-}
-
 #else
   unload_digit_image_from_time_slot(time_slot);
 
@@ -293,7 +295,7 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
 }
 
 #if USE_ANIMATION
-void slide_in_digit_image_into_time_slot(PropertyAnimation *animation, TimeSlot *time_slot, int digit_value) {
+void slide_in_digit_image_into_time_slot(PropertyAnimation *slide_in_animation, TimeSlot *time_slot, int digit_value) {
   GRect to_frame = frame_for_time_slot(time_slot);
 
   int from_x = to_frame.origin.x;
@@ -365,6 +367,7 @@ void slide_out_animation_stopped(Animation *slide_out_animation, bool finished, 
   TimeSlot *time_slot = (TimeSlot *)context;
 
   PropertyAnimation *animation = &time_slot->animation;
+  unload_digit_image_from_time_slot(time_slot);
 
   slide_in_digit_image_into_time_slot(animation, time_slot, time_slot->new_state);
   animation_schedule(&animation->animation);
