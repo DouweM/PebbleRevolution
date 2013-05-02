@@ -19,7 +19,7 @@ PBL_APP_INFO(MY_UUID,
 #define TIME_SLOT_ANIMATION_DURATION  400
 #define USE_AMERICAN_DATE_FORMAT   true
 #define HAVE_NO_ZEROS   true
-#define USE_ANIMATION   true
+#define USE_ANIMATION   false
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
