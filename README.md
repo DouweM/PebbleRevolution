@@ -5,11 +5,13 @@
 ![Image Alt](https://github.com/iNate71/RevolutionLite/raw/master/images/picofwatchface.jpg)
 
 ### Download version 1.6
-* [RevolutionLite_v1.6.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.6.pbw)
-* [RevolutionLite_v1.6_Zeroless.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.6_Zeroless.pbw) (Hours are single digits)
+* [RevolutionLite_v1.6.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/v1.6/RevolutionLite_v1.6.pbw)
 
-* [RevolutionLite_v1.6_Animated.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.6_Animated.pbw)
-* [RevolutionLite_v1.6_Zeroless_Animated.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/RevolutionLite_v1.6_Zeroless_Animated.pbw) (Hours are single digits)
+* [RevolutionLite_v1.6_Zeroless.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/v1.6/RevolutionLite_v1.6_Zeroless.pbw) (Hours are single digits)
+---------------------------------------------------------------------------------------------
+* [RevolutionLite_v1.6_Animated.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/v1.6/RevolutionLite_v1.6_Animated.pbw)
+
+* [RevolutionLite_v1.6_Zeroless_Animated.pbw](https://github.com/iNate71/RevolutionLite/raw/master/build_versions/v1.6/RevolutionLite_v1.6_Zeroless_Animated.pbw) (Hours are single digits)
 
 Implemented by Douwe Maan.
 
