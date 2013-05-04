@@ -18,8 +18,8 @@ PBL_APP_INFO(MY_UUID,
 // Definitions!
 #define TIME_SLOT_ANIMATION_DURATION  400
 #define USE_AMERICAN_DATE_FORMAT   true
-#define HAVE_NO_ZEROS   true
-#define USE_ANIMATION   false
+#define NO_ZEROS   true
+#define USE_ANIMATION   true
 
 // MumboJumbo Numbers
 #define SCREEN_WIDTH        144
@@ -318,7 +318,7 @@ GRect frame_for_time_slot(TimeSlot *time_slot) {
 
 void slide_in_digit_image_into_time_slot(TimeSlot *time_slot, int digit_value) {
   
-  #if HAVE_NO_ZEROS
+  #if NO_ZEROS
   if (time_slot->slot.number == 0 && digit_value == 0) {
     time_slot->animating = false;
     return;
@@ -398,7 +398,7 @@ void time_slot_slide_out_animation_stopped(Animation *slide_out_animation, bool 
 
   slide_in_digit_image_into_time_slot(time_slot, time_slot->new_state);
 
-  #if USE_NO_ZEROS
+  #if NO_ZEROS
   if (time_slot->animating) {
   animation_schedule(&time_slot->slide_in_animation.animation);
   }
@@ -787,7 +787,7 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
  
   unload_digit_image_from_time_slot(time_slot);
 
-  #if HAVE_NO_ZEROS
+  #if NO_ZEROS
   if (time_slot->number !=0 || digit_value !=0) {
   load_digit_image_into_time_slot(time_slot, digit_value);
   }
