@@ -75,7 +75,7 @@ const int DAY_IMAGE_RESOURCE_IDS[NUMBER_OF_DAY_IMAGES] = {
 };
 
 
-// Main
+// General
 Window window;
 Layer date_container_layer;
 
@@ -123,13 +123,8 @@ DayItem day_item;
 BmpContainer *load_digit_image_into_slot(Slot *slot, int digit_value, Layer *parent_layer, GRect frame, const int *digit_resource_ids);
 void unload_digit_image_from_slot(Slot *slot);
 
-// Display
-void display_time(PblTm *tick_time);
-void display_date(PblTm *tick_time);
-void display_seconds(PblTm *tick_time);
-void display_day(PblTm *tick_time);
-
 // Time
+void display_time(PblTm *tick_time);
 void display_time_value(int value, int row_number);
 void update_time_slot(TimeSlot *time_slot, int digit_value);
 GRect frame_for_time_slot(TimeSlot *time_slot);
@@ -139,11 +134,16 @@ void slide_out_digit_image_from_time_slot(TimeSlot *time_slot);
 void time_slot_slide_out_animation_stopped(Animation *slide_out_animation, bool finished, void *context);
 
 // Date
+void display_date(PblTm *tick_time);
 void display_date_value(int value, int part_number);
 void update_date_slot(Slot *date_slot, int digit_value);
 
 // Seconds
+void display_seconds(PblTm *tick_time);
 void update_second_slot(Slot *second_slot, int digit_value);
+
+// Day
+void display_day(PblTm *tick_time);
 
 // Handlers
 void pbl_main(void *params);
@@ -186,7 +186,7 @@ void unload_digit_image_from_slot(Slot *slot) {
   slot->state = EMPTY_SLOT;
 }
 
-// Display
+// Time
 void display_time(PblTm *tick_time) {
   int hour = tick_time->tm_hour;
 
@@ -201,48 +201,6 @@ void display_time(PblTm *tick_time) {
   display_time_value(tick_time->tm_min, 1);
 }
 
-void display_date(PblTm *tick_time) {
-  int day   = tick_time->tm_mday;
-  int month = tick_time->tm_mon + 1;
-
-#if USE_AMERICAN_DATE_FORMAT
-  display_date_value(month, 0);
-  display_date_value(day,   1);
-#else
-  display_date_value(day,   0);
-  display_date_value(month, 1);
-#endif
-}
-
-void display_seconds(PblTm *tick_time) {
-  int seconds = tick_time->tm_sec;
-
-  seconds = seconds % 100; // Maximum of two digits per row.
-
-  for (int second_slot_number = 1; second_slot_number >= 0; second_slot_number--) {
-    Slot *second_slot = &second_slots[second_slot_number];
-
-    update_second_slot(second_slot, seconds % 10);
-    
-    seconds = seconds / 10;
-  }
-}
-
-void display_day(PblTm *tick_time) {
-  BmpContainer *image_container = &day_item.image_container;
-
-  if (day_item.loaded) {
-    layer_remove_from_parent(&image_container->layer.layer);
-    bmp_deinit_container(image_container);
-  }
-
-  bmp_init_container(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday], image_container);
-  layer_add_child(&day_item.layer, &image_container->layer.layer);
-
-  day_item.loaded = true;
-}
-
-// Time
 void display_time_value(int value, int row_number) {
   value = value % 100; // Maximum of two digits per row.
 
@@ -376,6 +334,19 @@ void time_slot_slide_out_animation_stopped(Animation *slide_out_animation, bool 
 }
 
 // Date
+void display_date(PblTm *tick_time) {
+  int day   = tick_time->tm_mday;
+  int month = tick_time->tm_mon + 1;
+
+#if USE_AMERICAN_DATE_FORMAT
+  display_date_value(month, 0);
+  display_date_value(day,   1);
+#else
+  display_date_value(day,   0);
+  display_date_value(month, 1);
+#endif
+}
+
 void display_date_value(int value, int part_number) {
   value = value % 100; // Maximum of two digits per row.
 
@@ -406,6 +377,20 @@ void update_date_slot(Slot *date_slot, int digit_value) {
 }
 
 // Seconds
+void display_seconds(PblTm *tick_time) {
+  int seconds = tick_time->tm_sec;
+
+  seconds = seconds % 100; // Maximum of two digits per row.
+
+  for (int second_slot_number = 1; second_slot_number >= 0; second_slot_number--) {
+    Slot *second_slot = &second_slots[second_slot_number];
+
+    update_second_slot(second_slot, seconds % 10);
+    
+    seconds = seconds / 10;
+  }
+}
+
 void update_second_slot(Slot *second_slot, int digit_value) {
   if (second_slot->state == digit_value) {
     return;
@@ -420,6 +405,21 @@ void update_second_slot(Slot *second_slot, int digit_value) {
 
   unload_digit_image_from_slot(second_slot);
   load_digit_image_into_slot(second_slot, digit_value, &seconds_layer, frame, SECOND_IMAGE_RESOURCE_IDS);
+}
+
+// Day
+void display_day(PblTm *tick_time) {
+  BmpContainer *image_container = &day_item.image_container;
+
+  if (day_item.loaded) {
+    layer_remove_from_parent(&image_container->layer.layer);
+    bmp_deinit_container(image_container);
+  }
+
+  bmp_init_container(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday], image_container);
+  layer_add_child(&day_item.layer, &image_container->layer.layer);
+
+  day_item.loaded = true;
 }
 
 // Handlers
@@ -468,7 +468,7 @@ void handle_init(AppContextRef ctx) {
     second_slot->state  = EMPTY_SLOT;
   }
 
-  // Day slot
+  // Day item
   day_item.loaded = false;
 
 
