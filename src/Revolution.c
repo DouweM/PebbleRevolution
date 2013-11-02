@@ -9,6 +9,7 @@
 
 // Settings
 #define USE_AMERICAN_DATE_FORMAT      false
+#define VIBE_ON_HOUR                  false
 #define TIME_SLOT_ANIMATION_DURATION  500
 
 // Magic numbers
@@ -536,6 +537,12 @@ void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   if ((units_changed & MINUTE_UNIT) == MINUTE_UNIT) {
     display_time(tick_time);
   }
+
+#if VIBE_ON_HOUR
+  if ((units_changed & HOUR_UNIT) == HOUR_UNIT) {
+    vibes_double_pulse();
+  }
+#endif
 
   if ((units_changed & DAY_UNIT) == DAY_UNIT) {
     display_day(tick_time);
