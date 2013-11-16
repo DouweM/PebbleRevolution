@@ -205,7 +205,62 @@
         "type": "png",
         "name": "IMAGE_DAY_6",
         "file": "images/day_6.png"
-      }
+      },
+	{
+		"type": "png",
+		"name": "QTP_IMG_BT",
+		"file": "images/bluetooth.png"
+	},
+	{
+		"type": "png",
+		"name": "QTP_IMG_BAT",
+		"file": "images/battery.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_CLEAR_DAY",
+		"file":"images/clear_day.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_CLEAR_NIGHT",
+		"file":"images/clear_night.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_ATMOSPHERE_NIGHT",
+		"file":"images/atmosphere_night.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_ATMOSPHERE_DAY",
+		"file":"images/atmosphere.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_CLOUDY",
+		"file":"images/cloudy.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_THUNDERSTORM",
+		"file":"images/thunderstorm.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_RAIN",
+		"file":"images/rain.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_SNOW",
+		"file":"images/snow.png"
+	},
+	{
+		"type":"png",
+		"name":"QTP_IMAGE_NONE",
+		"file":"images/none.png"
+	}
     ]
   }
 }

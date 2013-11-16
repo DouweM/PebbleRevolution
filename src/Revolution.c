@@ -4,6 +4,8 @@
 // Envisioned as a watchface by Jean-Noël Mattern
 // Based on the display of the Freebox Revolution, which was designed by Philippe Starck.
 
+// To enable QuickTap+, copy and rename the `qtp_js` directory to `src/js` and define USE_QUICKTAP_PLUS
+
 #include <pebble.h>
 
 
@@ -11,6 +13,10 @@
 #define USE_AMERICAN_DATE_FORMAT      false
 #define VIBE_ON_HOUR                  false
 #define TIME_SLOT_ANIMATION_DURATION  500
+
+#ifdef USE_QUICKTAP_PLUS
+#include "QTPlus.h"
+#endif
 
 // Magic numbers
 #define SCREEN_WIDTH        144
@@ -450,6 +456,10 @@ int main(void) {
 }
 
 void init() {
+#ifdef USE_QUICKTAP_PLUS
+  qtp_conf = QTP_K_SHOW_TIME | QTP_K_SHOW_WEATHER | QTP_K_AUTOHIDE | QTP_K_DEGREES_F | QTP_K_INVERT;
+  qtp_setup();
+#endif
   window = window_create();
   window_stack_push(window, true /* Animated */);
   window_set_background_color(window, GColorBlack);
@@ -551,6 +561,10 @@ void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 void deinit() {
+
+#ifdef USE_QUICKTAP_PLUS
+  qtp_app_deinit();
+#endif
   // Time
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
     unload_digit_image_from_slot(&time_slots[i].slot);

@@ -10,6 +10,8 @@ Envisioned as a watchface by Jean-Noël Mattern (Jnm), who posted it in the ["Wa
 
 Based on the display of the [Freebox Revolution](http://www.free.fr/adsl/freebox-revolution.html), which was designed by Philippe Starck.
 
+Optionally includes [QuickTap+](https://github.com/grep-awesome/QuickTapPlus) for weather, bluetooth, and battery info. To build with it, move/rename `qtp_js` to `src/js` and define `USE_QUICKTAP_PLUS` in `Revolution.c`.
+
 ### Download version 2.0
 
 * [Revolution-2.0.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-2.0.pbw)
