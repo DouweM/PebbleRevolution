@@ -10,14 +10,14 @@ Envisioned as a watchface by Jean-Noël Mattern (Jnm), who posted it in the ["Wa
 
 Based on the display of the [Freebox Revolution](http://www.free.fr/adsl/freebox-revolution.html), which was designed by Philippe Starck.
 
-### Download version 2.0
+### Download version 2.0.1
 
-* [Revolution-2.0.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-2.0.pbw)
-* [Revolution-VibeOnHour-2.0.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-VibeOnHour-2.0.pbw) (vibrates on the hour)
+* [Revolution.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution.pbw)
+* [Revolution-VibeOnHour.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-VibeOnHour.pbw) (vibrates on the hour)
 
 #### American (date formatted as MM-DD)
-* [Revolution-American-2.0.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American-2.0.pbw)
-* [Revolution-American-VibeOnHour-2.0.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American-VibeOnHour-2.0.pbw) (vibrates on the hour)
+* [Revolution-American.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American.pbw)
+* [Revolution-American-VibeOnHour.pbw](https://github.com/DouweM/PebbleRevolution/raw/master/releases/Revolution-American-VibeOnHour.pbw) (vibrates on the hour)
 
 ## License
 Copyright (c) 2013 [Douwe Maan](http://www.douwemaan.com/)
