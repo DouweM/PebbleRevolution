@@ -230,12 +230,12 @@ void update_time_slot(TimeSlot *time_slot, int digit_value) {
     return;
   }
 
-  time_slot->updating = true;
-
   if (time_slot->slot.state == EMPTY_SLOT) {
-    slide_in_digit_image_into_time_slot(time_slot, digit_value);
+    GRect frame = frame_for_time_slot(time_slot);
+    load_digit_image_into_slot(&time_slot->slot, digit_value, time_layer, frame, TIME_IMAGE_RESOURCE_IDS);
   }
   else {
+    time_slot->updating = true;
     time_slot->new_state = digit_value;
     slide_out_digit_image_from_time_slot(time_slot);
   }
