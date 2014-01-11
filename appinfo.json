@@ -3,8 +3,8 @@
   "shortName":    "Revolution",
   "longName":     "Revolution",
   "companyName":  "Douwe Maan",
-  "versionCode":  20,
-  "versionLabel": "2.0",
+  "versionCode":  201,
+  "versionLabel": "2.0.1",
   "watchapp": {
     "watchface": true
   },
