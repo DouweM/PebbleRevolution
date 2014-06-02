@@ -6,10 +6,15 @@
 
 #include <pebble.h>
 
+typedef struct {
+  bool use_american_date_format;
+  bool vibe_on_hour;
+  bool invert_colors;
+  bool display_year;
+} Settings;
+Settings settings;
 
 // Settings
-#define USE_AMERICAN_DATE_FORMAT      false
-#define VIBE_ON_HOUR                  false
 #define TIME_SLOT_ANIMATION_DURATION  500
 
 // Magic numbers
@@ -36,32 +41,32 @@
 // Images
 #define NUMBER_OF_TIME_IMAGES 10
 const int TIME_IMAGE_RESOURCE_IDS[NUMBER_OF_TIME_IMAGES] = {
-  RESOURCE_ID_IMAGE_TIME_0, 
-  RESOURCE_ID_IMAGE_TIME_1, RESOURCE_ID_IMAGE_TIME_2, RESOURCE_ID_IMAGE_TIME_3, 
-  RESOURCE_ID_IMAGE_TIME_4, RESOURCE_ID_IMAGE_TIME_5, RESOURCE_ID_IMAGE_TIME_6, 
+  RESOURCE_ID_IMAGE_TIME_0,
+  RESOURCE_ID_IMAGE_TIME_1, RESOURCE_ID_IMAGE_TIME_2, RESOURCE_ID_IMAGE_TIME_3,
+  RESOURCE_ID_IMAGE_TIME_4, RESOURCE_ID_IMAGE_TIME_5, RESOURCE_ID_IMAGE_TIME_6,
   RESOURCE_ID_IMAGE_TIME_7, RESOURCE_ID_IMAGE_TIME_8, RESOURCE_ID_IMAGE_TIME_9
 };
 
 #define NUMBER_OF_DATE_IMAGES 10
 const int DATE_IMAGE_RESOURCE_IDS[NUMBER_OF_DATE_IMAGES] = {
-  RESOURCE_ID_IMAGE_DATE_0, 
-  RESOURCE_ID_IMAGE_DATE_1, RESOURCE_ID_IMAGE_DATE_2, RESOURCE_ID_IMAGE_DATE_3, 
-  RESOURCE_ID_IMAGE_DATE_4, RESOURCE_ID_IMAGE_DATE_5, RESOURCE_ID_IMAGE_DATE_6, 
+  RESOURCE_ID_IMAGE_DATE_0,
+  RESOURCE_ID_IMAGE_DATE_1, RESOURCE_ID_IMAGE_DATE_2, RESOURCE_ID_IMAGE_DATE_3,
+  RESOURCE_ID_IMAGE_DATE_4, RESOURCE_ID_IMAGE_DATE_5, RESOURCE_ID_IMAGE_DATE_6,
   RESOURCE_ID_IMAGE_DATE_7, RESOURCE_ID_IMAGE_DATE_8, RESOURCE_ID_IMAGE_DATE_9
 };
 
 #define NUMBER_OF_SECOND_IMAGES 10
 const int SECOND_IMAGE_RESOURCE_IDS[NUMBER_OF_SECOND_IMAGES] = {
-  RESOURCE_ID_IMAGE_SECOND_0, 
-  RESOURCE_ID_IMAGE_SECOND_1, RESOURCE_ID_IMAGE_SECOND_2, RESOURCE_ID_IMAGE_SECOND_3, 
-  RESOURCE_ID_IMAGE_SECOND_4, RESOURCE_ID_IMAGE_SECOND_5, RESOURCE_ID_IMAGE_SECOND_6, 
+  RESOURCE_ID_IMAGE_SECOND_0,
+  RESOURCE_ID_IMAGE_SECOND_1, RESOURCE_ID_IMAGE_SECOND_2, RESOURCE_ID_IMAGE_SECOND_3,
+  RESOURCE_ID_IMAGE_SECOND_4, RESOURCE_ID_IMAGE_SECOND_5, RESOURCE_ID_IMAGE_SECOND_6,
   RESOURCE_ID_IMAGE_SECOND_7, RESOURCE_ID_IMAGE_SECOND_8, RESOURCE_ID_IMAGE_SECOND_9
 };
 
 #define NUMBER_OF_DAY_IMAGES 7
 const int DAY_IMAGE_RESOURCE_IDS[NUMBER_OF_DAY_IMAGES] = {
-  RESOURCE_ID_IMAGE_DAY_0, RESOURCE_ID_IMAGE_DAY_1, RESOURCE_ID_IMAGE_DAY_2, 
-  RESOURCE_ID_IMAGE_DAY_3, RESOURCE_ID_IMAGE_DAY_4, RESOURCE_ID_IMAGE_DAY_5, 
+  RESOURCE_ID_IMAGE_DAY_0, RESOURCE_ID_IMAGE_DAY_1, RESOURCE_ID_IMAGE_DAY_2,
+  RESOURCE_ID_IMAGE_DAY_3, RESOURCE_ID_IMAGE_DAY_4, RESOURCE_ID_IMAGE_DAY_5,
   RESOURCE_ID_IMAGE_DAY_6
 };
 
@@ -138,14 +143,17 @@ void display_date(struct tm *tick_time);
 void display_date_value(int value, int part_number);
 void update_date_slot(Slot *date_slot, int digit_value);
 
-// Seconds
-void display_seconds(struct tm *tick_time);
+// Seconds / years
+void display_seconds_years(struct tm *tick_time);
 void update_second_slot(Slot *second_slot, int digit_value);
+
+// Settings
+void received_settings(DictionaryIterator* received, void* context);
 
 // Handlers
 int main(void);
 void init();
-void handle_second_tick(struct tm *tick_time, TimeUnits units_changed);
+void handle_tick(struct tm *tick_time, TimeUnits units_changed);
 void deinit();
 
 
@@ -174,6 +182,9 @@ BitmapLayer *load_digit_image_into_slot(Slot *slot, int digit_value, Layer *pare
   slot->image = gbitmap_create_with_resource(digit_resource_ids[digit_value]);
 
   slot->image_layer = bitmap_layer_create(frame);
+  if (settings.invert_colors)
+    bitmap_layer_set_compositing_mode(
+        slot->image_layer, GCompOpAssignInverted);
   bitmap_layer_set_bitmap(slot->image_layer, slot->image);
   layer_add_child(parent_layer, bitmap_layer_get_layer(slot->image_layer));
 
@@ -354,6 +365,9 @@ void display_day(struct tm *tick_time) {
   day_item.image = gbitmap_create_with_resource(DAY_IMAGE_RESOURCE_IDS[tick_time->tm_wday]);
 
   day_item.image_layer = bitmap_layer_create(day_item.image->bounds);
+  if (settings.invert_colors)
+    bitmap_layer_set_compositing_mode(
+        day_item.image_layer, GCompOpAssignInverted);
   bitmap_layer_set_bitmap(day_item.image_layer, day_item.image);
   layer_add_child(day_item.layer, bitmap_layer_get_layer(day_item.image_layer));
 
@@ -361,7 +375,7 @@ void display_day(struct tm *tick_time) {
 }
 
 void unload_day_item() {
-  if (!day_item.loaded) 
+  if (!day_item.loaded)
     return;
 
   layer_remove_from_parent(bitmap_layer_get_layer(day_item.image_layer));
@@ -375,13 +389,13 @@ void display_date(struct tm *tick_time) {
   int day   = tick_time->tm_mday;
   int month = tick_time->tm_mon + 1;
 
-#if USE_AMERICAN_DATE_FORMAT
-  display_date_value(month, 0);
-  display_date_value(day,   1);
-#else
-  display_date_value(day,   0);
-  display_date_value(month, 1);
-#endif
+  if (settings.use_american_date_format) {
+    display_date_value(month, 0);
+    display_date_value(day,   1);
+  } else {
+    display_date_value(day,   0);
+    display_date_value(month, 1);
+  }
 }
 
 void display_date_value(int value, int part_number) {
@@ -412,9 +426,14 @@ void update_date_slot(Slot *date_slot, int digit_value) {
   load_digit_image_into_slot(date_slot, digit_value, date_layer, frame, DATE_IMAGE_RESOURCE_IDS);
 }
 
-// Seconds
-void display_seconds(struct tm *tick_time) {
-  int seconds = tick_time->tm_sec;
+// Seconds / years
+void display_seconds_years(struct tm *tick_time) {
+  int seconds;
+  if (settings.display_year) {
+    seconds = tick_time->tm_year - 100;
+  } else {
+    seconds = tick_time->tm_sec;
+  }
 
   seconds = seconds % 100; // Maximum of two digits per row.
 
@@ -422,7 +441,7 @@ void display_seconds(struct tm *tick_time) {
     Slot *second_slot = &second_slots[second_slot_number];
 
     update_second_slot(second_slot, seconds % 10);
-    
+
     seconds = seconds / 10;
   }
 }
@@ -432,14 +451,34 @@ void update_second_slot(Slot *second_slot, int digit_value) {
     return;
 
   GRect frame = GRect(
-    second_slot->number * (SECOND_IMAGE_WIDTH + MARGIN), 
-    0, 
-    SECOND_IMAGE_WIDTH, 
+    second_slot->number * (SECOND_IMAGE_WIDTH + MARGIN),
+    0,
+    SECOND_IMAGE_WIDTH,
     SECOND_IMAGE_HEIGHT
   );
 
   unload_digit_image_from_slot(second_slot);
   load_digit_image_into_slot(second_slot, digit_value, seconds_layer, frame, SECOND_IMAGE_RESOURCE_IDS);
+}
+
+void received_settings(DictionaryIterator* received, void* context) {
+  for (Tuple* tuple = dict_read_first(received); tuple != NULL;
+       tuple = dict_read_next(received)) {
+    switch (tuple->key) {
+      case 0:
+        settings.use_american_date_format = tuple->value->int32 == 1;
+        break;
+      case 1:
+        settings.vibe_on_hour = tuple->value->int32 == 1;
+        break;
+      case 2:
+        settings.invert_colors = tuple->value->int32 == 1;
+        break;
+      case 3:
+        settings.display_year = tuple->value->int32 == 1;
+        break;
+    }
+  }
 }
 
 // Handlers
@@ -450,9 +489,17 @@ int main(void) {
 }
 
 void init() {
+  if (persist_read_data(0, &settings, sizeof(Settings)) == E_DOES_NOT_EXIST) {
+    settings.use_american_date_format = false;
+    settings.vibe_on_hour = false;
+    settings.invert_colors = false;
+    settings.display_year = false;
+  }
+
   window = window_create();
   window_stack_push(window, true /* Animated */);
-  window_set_background_color(window, GColorBlack);
+  window_set_background_color(
+      window, (settings.invert_colors? GColorWhite : GColorBlack));
 
   Layer *root_layer = window_get_root_layer(window);
 
@@ -479,9 +526,9 @@ void init() {
   day_item.loaded = false;
 
   GRect day_layer_frame = GRect(
-    MARGIN, 
-    footer_height - DAY_IMAGE_HEIGHT - MARGIN, 
-    DAY_IMAGE_WIDTH, 
+    MARGIN,
+    footer_height - DAY_IMAGE_HEIGHT - MARGIN,
+    DAY_IMAGE_WIDTH,
     DAY_IMAGE_HEIGHT
   );
   day_item.layer = layer_create(day_layer_frame);
@@ -503,7 +550,7 @@ void init() {
   date_layer = layer_create(date_layer_frame);
   layer_add_child(footer_layer, date_layer);
 
-  // Seconds
+  // Seconds / years
   for (int i = 0; i < NUMBER_OF_SECOND_SLOTS; i++) {
     Slot *second_slot = &second_slots[i];
     second_slot->number = i;
@@ -511,9 +558,9 @@ void init() {
   }
 
   GRect seconds_layer_frame = GRect(
-    SCREEN_WIDTH - SECOND_IMAGE_WIDTH - MARGIN - SECOND_IMAGE_WIDTH - MARGIN, 
-    footer_height - SECOND_IMAGE_HEIGHT - MARGIN, 
-    SECOND_IMAGE_WIDTH + MARGIN + SECOND_IMAGE_WIDTH, 
+    SCREEN_WIDTH - SECOND_IMAGE_WIDTH - MARGIN - SECOND_IMAGE_WIDTH - MARGIN,
+    footer_height - SECOND_IMAGE_HEIGHT - MARGIN,
+    SECOND_IMAGE_WIDTH + MARGIN + SECOND_IMAGE_WIDTH,
     SECOND_IMAGE_HEIGHT
   );
   seconds_layer = layer_create(seconds_layer_frame);
@@ -526,31 +573,45 @@ void init() {
   display_time(tick_time);
   display_day(tick_time);
   display_date(tick_time);
-  display_seconds(tick_time);
+  display_seconds_years(tick_time);
 
-  tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+  TimeUnits tick_subscribe_interval =
+      (settings.display_year? MINUTE_UNIT: SECOND_UNIT);
+  tick_timer_service_subscribe(tick_subscribe_interval, handle_tick);
+
+
+  // Settings
+  app_message_register_inbox_received(received_settings);
+  app_message_open(256, 0);
 }
 
-void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
-  display_seconds(tick_time);
+void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
+  if (!settings.display_year) {
+    display_seconds_years(tick_time);
+  }
 
   if ((units_changed & MINUTE_UNIT) == MINUTE_UNIT) {
     display_time(tick_time);
   }
 
-#if VIBE_ON_HOUR
-  if ((units_changed & HOUR_UNIT) == HOUR_UNIT) {
+  if (settings.vibe_on_hour && (units_changed & HOUR_UNIT) == HOUR_UNIT) {
     vibes_double_pulse();
   }
-#endif
 
   if ((units_changed & DAY_UNIT) == DAY_UNIT) {
     display_day(tick_time);
     display_date(tick_time);
   }
+
+  if (settings.display_year && (units_changed & YEAR_UNIT) == YEAR_UNIT) {
+    display_seconds_years(tick_time);
+  }
 }
 
 void deinit() {
+  // Settings
+  persist_write_data(0, &settings, sizeof(Settings));
+
   // Time
   for (int i = 0; i < NUMBER_OF_TIME_SLOTS; i++) {
     unload_digit_image_from_slot(&time_slots[i].slot);
@@ -575,7 +636,6 @@ void deinit() {
     unload_digit_image_from_slot(&second_slots[i]);
   }
   layer_destroy(seconds_layer);
-
 
   layer_destroy(footer_layer);
 

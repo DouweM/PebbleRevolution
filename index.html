@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Configuration</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAAdIOW2ntfXQiIaSgX0c8KpRS8QIXLX2ycRdTteZS2W1M7b4khSBReveKbOTim0FAVoHdOA0qWa9TbKg"></script>
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jquerymobile/1.4.2/jquery.mobile.min.css" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquerymobile/1.4.2/jquery.mobile.min.js"></script>
+  </head>
+  <body>
+    <div data-role="page" id="main">
+      <div data-role="header" class="jqm-header">
+        <h1>Revolution</h1>
+      </div>
+      <div data-role="content">
+        <fieldset><div data-role="fieldcontain">
+        <label for="use_american_date_format">Use American date format?</label>
+        <select name="use_american_date_format" id="use_american_date_format"
+            data-role="flipswitch">
+          <option value=0>No</option>
+          <option value=1>Yes<option>
+        </select>
+        </div></fieldset>
+        <fieldset><div data-role="fieldcontain">
+        <label for="vibe_on_hour">Vibrate on the hour?</label>
+        <select name="vibe_on_hour" id="vibe_on_hour" data-role="flipswitch">
+          <option value=0>No</option>
+          <option value=1>Yes<option>
+        </select>
+        </div></fieldset>
+        <fieldset><div data-role="fieldcontain">
+        <label for="invert_colors">Invert colors?</label>
+        <select name="invert_colors" id="invert_colors" data-role="flipswitch">
+          <option value=0>No</option>
+          <option value=1>Yes<option>
+        </select>
+        </div></fieldset>
+        <fieldset><div data-role="fieldcontain">
+        <label for="display_year">Display second or year?</label>
+        <select name="display_year" id="display_year" data-role="flipswitch">
+          <option value=0>Sec</option>
+          <option value=1>Year<option>
+        </select>
+        </div></fieldset>
+        <div class="ui-body ui-body-b">
+          <fieldset class="ui-grid-a">
+            <div class="ui-block-a"><button type="submit" data-theme="d" id="b-cancel">Cancel</button></div>
+            <div class="ui-block-b"><button type="submit" data-theme="a" id="b-submit">Submit</button></div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+    <script>
+      function saveOptions() {
+        var options = {
+          'use_american_date_format': parseInt($("#use_american_date_format").val()),
+          'vibe_on_hour': parseInt($("#vibe_on_hour").val()),
+          'invert_colors': parseInt($("#invert_colors").val()),
+          'display_year': parseInt($("#display_year").val()),
+        }
+        return options;
+      }
+
+      $().ready(function() {
+        $("#b-cancel").click(function() {
+          document.location = "pebblejs://close";
+        });
+
+        $("#b-submit").click(function() {
+          var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(saveOptions()));
+          document.location = location;
+        });
+
+      });
+    </script>
+  </body>
+</html>
