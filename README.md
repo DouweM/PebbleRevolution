@@ -1,8 +1,8 @@
 ## Revolution watchface
 
-![Photo](http://d.pr/i/Qe9k+)
+[Pebble](https://en.wikipedia.org/wiki/Pebble_(watch)) watchface:
 
-[Video of time animation](http://d.pr/v/nQWY)
+![Screenshot](./Screenshot.png)
 
 Implemented by Douwe Maan.
 
