@@ -1,211 +1,215 @@
 {
-  "uuid":         "a1230861-d4eb-4f6e-a2d0-eaa2a07797dd",
-  "shortName":    "Revolution",
-  "longName":     "Revolution",
-  "companyName":  "Douwe Maan",
-  "versionCode":  201,
-  "versionLabel": "2.0.1",
-  "watchapp": {
-    "watchface": true
-  },
-  "appKeys": {},
-  "resources": {
-    "media": [
-      {
-        "menuIcon": true,
-        "type": "png",
-        "name": "IMAGE_MENU_ICON",
-        "file": "images/menu_icon.png"
-      },
-
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_0",
-        "file": "images/time_0.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_1",
-        "file": "images/time_1.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_2",
-        "file": "images/time_2.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_3",
-        "file": "images/time_3.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_4",
-        "file": "images/time_4.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_5",
-        "file": "images/time_5.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_6",
-        "file": "images/time_6.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_7",
-        "file": "images/time_7.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_8",
-        "file": "images/time_8.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_TIME_9",
-        "file": "images/time_9.png"
-      },
-
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_0",
-        "file": "images/date_0.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_1",
-        "file": "images/date_1.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_2",
-        "file": "images/date_2.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_3",
-        "file": "images/date_3.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_4",
-        "file": "images/date_4.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_5",
-        "file": "images/date_5.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_6",
-        "file": "images/date_6.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_7",
-        "file": "images/date_7.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_8",
-        "file": "images/date_8.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DATE_9",
-        "file": "images/date_9.png"
-      },
-
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_0",
-        "file": "images/second_0.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_1",
-        "file": "images/second_1.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_2",
-        "file": "images/second_2.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_3",
-        "file": "images/second_3.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_4",
-        "file": "images/second_4.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_5",
-        "file": "images/second_5.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_6",
-        "file": "images/second_6.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_7",
-        "file": "images/second_7.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_8",
-        "file": "images/second_8.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_SECOND_9",
-        "file": "images/second_9.png"
-      },
-
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_0",
-        "file": "images/day_0.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_1",
-        "file": "images/day_1.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_2",
-        "file": "images/day_2.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_3",
-        "file": "images/day_3.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_4",
-        "file": "images/day_4.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_5",
-        "file": "images/day_5.png"
-      },
-      {
-        "type": "png",
-        "name": "IMAGE_DAY_6",
-        "file": "images/day_6.png"
-      }
-    ]
-  }
+    "longName": "Revolution",
+    "versionLabel": "2.0.1",
+    "companyName": "Douwe Maan",
+    "appKeys": {
+        "display_year": 3,
+        "use_american_date_format": 0,
+        "vibe_on_hour": 1,
+        "invert_colors": 2
+    },
+    "capabilities": [
+        "configurable"
+    ],
+    "uuid": "a1230861-d4eb-4f6e-a2d0-eaa2a07797dd",
+    "watchapp": {
+        "watchface": true
+    },
+    "shortName": "Revolution",
+    "versionCode": 201,
+    "resources": {
+        "media": [
+            {
+                "file": "images/menu_icon.png",
+                "menuIcon": true,
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/time_0.png",
+                "name": "IMAGE_TIME_0",
+                "type": "png"
+            },
+            {
+                "file": "images/time_1.png",
+                "name": "IMAGE_TIME_1",
+                "type": "png"
+            },
+            {
+                "file": "images/time_2.png",
+                "name": "IMAGE_TIME_2",
+                "type": "png"
+            },
+            {
+                "file": "images/time_3.png",
+                "name": "IMAGE_TIME_3",
+                "type": "png"
+            },
+            {
+                "file": "images/time_4.png",
+                "name": "IMAGE_TIME_4",
+                "type": "png"
+            },
+            {
+                "file": "images/time_5.png",
+                "name": "IMAGE_TIME_5",
+                "type": "png"
+            },
+            {
+                "file": "images/time_6.png",
+                "name": "IMAGE_TIME_6",
+                "type": "png"
+            },
+            {
+                "file": "images/time_7.png",
+                "name": "IMAGE_TIME_7",
+                "type": "png"
+            },
+            {
+                "file": "images/time_8.png",
+                "name": "IMAGE_TIME_8",
+                "type": "png"
+            },
+            {
+                "file": "images/time_9.png",
+                "name": "IMAGE_TIME_9",
+                "type": "png"
+            },
+            {
+                "file": "images/date_0.png",
+                "name": "IMAGE_DATE_0",
+                "type": "png"
+            },
+            {
+                "file": "images/date_1.png",
+                "name": "IMAGE_DATE_1",
+                "type": "png"
+            },
+            {
+                "file": "images/date_2.png",
+                "name": "IMAGE_DATE_2",
+                "type": "png"
+            },
+            {
+                "file": "images/date_3.png",
+                "name": "IMAGE_DATE_3",
+                "type": "png"
+            },
+            {
+                "file": "images/date_4.png",
+                "name": "IMAGE_DATE_4",
+                "type": "png"
+            },
+            {
+                "file": "images/date_5.png",
+                "name": "IMAGE_DATE_5",
+                "type": "png"
+            },
+            {
+                "file": "images/date_6.png",
+                "name": "IMAGE_DATE_6",
+                "type": "png"
+            },
+            {
+                "file": "images/date_7.png",
+                "name": "IMAGE_DATE_7",
+                "type": "png"
+            },
+            {
+                "file": "images/date_8.png",
+                "name": "IMAGE_DATE_8",
+                "type": "png"
+            },
+            {
+                "file": "images/date_9.png",
+                "name": "IMAGE_DATE_9",
+                "type": "png"
+            },
+            {
+                "file": "images/second_0.png",
+                "name": "IMAGE_SECOND_0",
+                "type": "png"
+            },
+            {
+                "file": "images/second_1.png",
+                "name": "IMAGE_SECOND_1",
+                "type": "png"
+            },
+            {
+                "file": "images/second_2.png",
+                "name": "IMAGE_SECOND_2",
+                "type": "png"
+            },
+            {
+                "file": "images/second_3.png",
+                "name": "IMAGE_SECOND_3",
+                "type": "png"
+            },
+            {
+                "file": "images/second_4.png",
+                "name": "IMAGE_SECOND_4",
+                "type": "png"
+            },
+            {
+                "file": "images/second_5.png",
+                "name": "IMAGE_SECOND_5",
+                "type": "png"
+            },
+            {
+                "file": "images/second_6.png",
+                "name": "IMAGE_SECOND_6",
+                "type": "png"
+            },
+            {
+                "file": "images/second_7.png",
+                "name": "IMAGE_SECOND_7",
+                "type": "png"
+            },
+            {
+                "file": "images/second_8.png",
+                "name": "IMAGE_SECOND_8",
+                "type": "png"
+            },
+            {
+                "file": "images/second_9.png",
+                "name": "IMAGE_SECOND_9",
+                "type": "png"
+            },
+            {
+                "file": "images/day_0.png",
+                "name": "IMAGE_DAY_0",
+                "type": "png"
+            },
+            {
+                "file": "images/day_1.png",
+                "name": "IMAGE_DAY_1",
+                "type": "png"
+            },
+            {
+                "file": "images/day_2.png",
+                "name": "IMAGE_DAY_2",
+                "type": "png"
+            },
+            {
+                "file": "images/day_3.png",
+                "name": "IMAGE_DAY_3",
+                "type": "png"
+            },
+            {
+                "file": "images/day_4.png",
+                "name": "IMAGE_DAY_4",
+                "type": "png"
+            },
+            {
+                "file": "images/day_5.png",
+                "name": "IMAGE_DAY_5",
+                "type": "png"
+            },
+            {
+                "file": "images/day_6.png",
+                "name": "IMAGE_DAY_6",
+                "type": "png"
+            }
+        ]
+    }
 }
